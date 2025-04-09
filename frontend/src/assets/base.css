@@ -1,0 +1,72 @@
+/* Base Colors */
+:root {
+  /* Primary colors */
+  --p-primary-50: #ecfdf5;
+  --p-primary-100: #d1fae5;
+  --p-primary-200: #a7f3d0;
+  --p-primary-300: #6ee7b7;
+  --p-primary-400: #2dd4bf; /* Secondary Accent */
+  --p-primary-500: #10b981;
+  --p-primary-600: #059669;
+  --p-primary-700: #047857;
+  --p-primary-800: #065f46;
+  --p-primary-900: #064e3b;
+  --p-primary-950: #022c22;
+
+  /* Surface colors - Light Mode */
+  --p-surface-0: #ffffff; /* White */
+  --p-surface-50: #f9fafb; /* Gray-50 */
+  --p-surface-100: #f4f4f5;
+  --p-surface-200: #e5e7eb; /* Gray-200 */
+  --p-surface-300: #d4d4d8;
+  --p-surface-400: #9ca3af;
+  --p-surface-500: #6b7280;
+  --p-surface-600: #4b5563;
+  --p-surface-700: #374151; /* Secondary Text */
+  --p-surface-800: #1f2937; /* Border in Dark Mode */
+  --p-surface-900: #111827; /* Foreground in Dark Mode, Primary Text in Light */
+  --p-surface-950: #030712; /* Background in Dark Mode */
+}
+
+/* Light Mode */
+:root {
+  --p-primary-color: #2563eb; /* Blue-600 */
+  --p-primary-hover-color: #1d4ed8; /* Blue-700 */
+  --p-primary-active-color: #1e40af; /* Blue-800 */
+  --p-primary-contrast-color: white;
+  --p-secondary-color: #6366f1; /* Indigo-500 */
+  --p-success-color: #0d9488; /* Teal-600 */
+  --p-warning-color: #f59e0b; /* Amber-500 */
+  --p-danger-color: #e11d48; /* Rose-500 */
+
+  --p-background-color: var(--p-surface-50); /* Gray-50 */
+  --p-foreground-color: var(--p-surface-0); /* White */
+  --p-content-border-color: var(--p-surface-200); /* Gray-200 */
+
+  --p-text-color: var(--p-surface-900); /* Gray-900 */
+  --p-text-secondary-color: var(--p-surface-700); /* Gray-700 */
+
+  --p-highlight-background: #eff6ff; /* Blue-50 */
+  --p-highlight-color: #2563eb; /* Blue-600 */
+}
+
+/* Dark Mode - inspired by daily.dev style */
+html.dark {
+  /* daily.dev uses a more subtle dark gray (#151618) as background */
+  --p-primary-color: #3b82f6; /* Blue-500 - primary color */
+  --p-primary-hover-color: #2563eb; /* Blue-600 */
+  --p-primary-active-color: #1d4ed8; /* Blue-700 */
+  --p-primary-contrast-color: white;
+  --p-secondary-color: #0ea5e9; /* Sky-500 - matches blue accent */
+
+  /* Updated colors to match dark theme */
+  --p-background-color: #151618; /* dark bg */
+  --p-foreground-color: #1e1f23; /* card bg */
+  --p-content-border-color: #27292f; /* border color */
+
+  --p-text-color: #e5e7eb; /* Gray-200 - primary text */
+  --p-text-secondary-color: #9ca3af; /* Gray-400 - secondary text */
+
+  --p-highlight-background: rgba(59, 130, 246, 0.1); /* Blue with transparency */
+  --p-highlight-color: #60a5fa; /* Blue-400 */
+}
