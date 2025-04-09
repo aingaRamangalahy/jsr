@@ -11,10 +11,12 @@
           <i class="pi pi-bars text-xl"></i>
         </button>
         <router-link to="/" class="flex items-center">
-          <span class="text-blue-600 dark:text-indigo-400 font-bold text-xl md:text-2xl">JS</span>
-          <span class="font-bold text-xl md:text-2xl ml-1 text-gray-900 dark:text-blue-300">
-            Resources
-          </span>
+          <div class="flex items-end relative">
+            <span class="text-blue-600 dark:text-indigo-400 font-bold text-xl md:text-2xl">jsresources</span>
+            <span class="font-bold text-sm ml-1 text-gray-900 dark:text-blue-300 absolute -top-1 left-1">
+              dev
+            </span>
+          </div>
         </router-link>
       </div>
 

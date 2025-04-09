@@ -1,20 +1,15 @@
 <template>
   <div class="max-w-3xl mx-auto">
-    <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-blue-400">About JS Resources</h1>
+    <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-blue-400">About jsresource.dev</h1>
 
     <div
       class="bg-white dark:bg-[#1e1f23] rounded-lg shadow-sm border border-gray-200 dark:border-[#27292f] p-6 mb-6"
     >
       <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-blue-400">Our Mission</h2>
       <p class="text-gray-700 dark:text-gray-300 mb-4">
-        JS Resources is a community-driven platform that aims to help developers at all skill levels
+        jsresource.dev is a platform that aims to help developers at all skill levels
         find the best JavaScript learning resources. Whether you're just starting out or looking to
         level up to senior status, our curated collection of resources can help you on your journey.
-      </p>
-      <p class="text-gray-700 dark:text-gray-300">
-        We believe in the power of open source and community collaboration. That's why we've made it
-        easy for users to contribute, rate, and comment on resources, ensuring that the best content
-        rises to the top.
       </p>
     </div>
 

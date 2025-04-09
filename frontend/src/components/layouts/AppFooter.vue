@@ -2,12 +2,11 @@
   <footer class="py-2">
     <div>
       <div class="flex items-center justify-between space-y-2">
-        <router-link
-          to="/about"
-          class="text-xs text-gray-600 dark:text-blue-300 text-center hover:text-blue-600 dark:hover:text-blue-400 transition-colors underline"
+        <p
+          class="text-xs text-gray-600 dark:text-blue-300 text-center hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
           @ 2025 JS Resources
-        </router-link>
+      </p>
         <a
           href="https://github.com"
           target="_blank"
