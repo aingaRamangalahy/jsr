@@ -1,7 +1,7 @@
-import type { Resource } from '@/types/resource'
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { resources as initialResources } from '@/data/resources'
+import { resourceService } from '@/services/api/resource.service'
+import type { Resource, ResourceCreateDTO } from '@common/types/resource'
 
 export interface FilterState {
   sortBy: string
@@ -13,7 +13,9 @@ export interface FilterState {
 }
 
 export const useResourceStore = defineStore('resources', () => {
-  const resources = ref([...initialResources])
+  const resources = ref<Resource[]>([])
+  const isLoading = ref(false)
+  const error = ref<string | null>(null)
 
   const filters = ref<FilterState>({
     sortBy: 'newest',
@@ -34,7 +36,7 @@ export const useResourceStore = defineStore('resources', () => {
         (resource) =>
           resource.title.toLowerCase().includes(searchLower) ||
           resource.description.toLowerCase().includes(searchLower) ||
-          resource.tags.some((tag) => tag.toLowerCase().includes(searchLower)),
+          resource.tags.some((tag: string) => tag.toLowerCase().includes(searchLower)),
       )
     }
 
@@ -91,9 +93,28 @@ export const useResourceStore = defineStore('resources', () => {
     return result
   })
 
+  async function fetchResources() {
+    if (isLoading.value) return
+    isLoading.value = true
+    error.value = null
+    try {
+      const response = await resourceService.getResources()
+      resources.value = response.data
+    } catch (err) {
+      console.error('Error fetching resources:', err)
+      error.value = 'Failed to fetch resources. Please try again later.'
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   // Update filter functions
   function updateFilter<K extends keyof FilterState>(key: K, value: FilterState[K]) {
-    filters.value[key] = value
+    if (value === 'all') {
+      clearFilters()
+    } else {
+      filters.value[key] = value
+    }
   }
 
   function updateFrameworkFilters(frameworks: string[]) {
@@ -125,29 +146,51 @@ export const useResourceStore = defineStore('resources', () => {
   }
 
   // Resource management
-  const addResource = (resource: Resource) => {
-    // Generate a new ID based on the highest current ID
-    const newId = Math.max(0, ...resources.value.map((r) => r.id)) + 1
-    const newResource = {
-      ...resource,
-      id: newId,
-      votes: 0,
-      rating: 0,
-      dateAdded: new Date().toISOString(),
-    }
+  async function addResource(resourceData: ResourceCreateDTO) {
+    isLoading.value = true
+    error.value = null
 
-    resources.value.push(newResource)
-    return newResource
+    try {
+      const response = await resourceService.createResource(resourceData)
+      resources.value?.unshift(response.data)
+      return response.data
+    } catch (err) {
+      error.value = 'Failed to add resource'
+      console.error(err)
+      throw err
+    } finally {
+      isLoading.value = false
+    }
   }
 
-  const getResourceById = (id: number) => {
-    return resources.value.find((r) => r.id === id)
+  async function getResourceById(id: string) {
+    isLoading.value = true
+    error.value = null
+
+    try {
+      const response = await resourceService.getResourceById(id)
+      return response.data
+    } catch (err) {
+      error.value = 'Failed to get resource'
+      console.error(err)
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  function init() {
+    fetchResources()
   }
 
   return {
     resources,
     filters,
     filteredResources,
+    isLoading,
+    error,
+    init,
+    fetchResources,
     updateFilter,
     updateFrameworkFilters,
     toggleFramework,

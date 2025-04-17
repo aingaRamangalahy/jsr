@@ -7,9 +7,9 @@
     >
       <h2 class="text-xl font-semibold mb-4 text-gray-900 dark:text-blue-400">Our Mission</h2>
       <p class="text-gray-700 dark:text-gray-300 mb-4">
-        jsresource.dev is a platform that aims to help developers at all skill levels
-        find the best JavaScript learning resources. Whether you're just starting out or looking to
-        level up to senior status, our curated collection of resources can help you on your journey.
+        jsresource.dev is a platform that aims to help developers at all skill levels find the best
+        JavaScript learning resources. Whether you're just starting out or looking to level up to
+        senior status, our curated collection of resources can help you on your journey.
       </p>
     </div>
 

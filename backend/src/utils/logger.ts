@@ -15,9 +15,7 @@ const logger = winston.createLogger({
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize(),
-        winston.format.printf(
-          (info) => `${info.timestamp} ${info.level}: ${info.message}`
-        )
+        winston.format.printf((info) => `${info.timestamp} ${info.level}: ${info.message}`)
       ),
     }),
   ],
@@ -25,9 +23,7 @@ const logger = winston.createLogger({
 
 // If in production, also log to file
 if (process.env.NODE_ENV === 'production') {
-  logger.add(
-    new winston.transports.File({ filename: 'logs/error.log', level: 'error' })
-  );
+  logger.add(new winston.transports.File({ filename: 'logs/error.log', level: 'error' }));
   logger.add(new winston.transports.File({ filename: 'logs/combined.log' }));
 }
 

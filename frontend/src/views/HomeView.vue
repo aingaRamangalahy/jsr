@@ -33,32 +33,32 @@
 </template>
 
 <script setup lang="ts">
-  import { onMounted, onUnmounted, ref } from 'vue'
-  import FrameworkFilters from '@/components/resources/FrameworkFilters.vue'
-  import ResourceFilters from '@/components/resources/ResourceFilters.vue'
-  import ResourceList from '@/components/resources/ResourceList.vue'
-  import Button from '@/volt/Button.vue'
+import { onMounted, onUnmounted, ref } from 'vue'
+import ResourceFilters from '@/components/resources/ResourceFilters.vue'
+import ResourceList from '@/components/resources/ResourceList.vue'
+import Button from '@/volt/Button.vue'
+import FrameworkFilters from '@/components/resources/FrameworkFilters.vue'
 
-  const showBackToTop = ref(false)
+const showBackToTop = ref(false)
 
-  onMounted(() => {
-    const handleScroll = () => {
-      // Show button when scrolled down 300px or more
-      showBackToTop.value = window.scrollY > 300
-    }
-
-    window.addEventListener('scroll', handleScroll)
-
-    // Clean up event listener on component unmount
-    onUnmounted(() => {
-      window.removeEventListener('scroll', handleScroll)
-    })
-  })
-
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth',
-    })
+onMounted(() => {
+  const handleScroll = () => {
+    // Show button when scrolled down 300px or more
+    showBackToTop.value = window.scrollY > 300
   }
+
+  window.addEventListener('scroll', handleScroll)
+
+  // Clean up event listener on component unmount
+  onUnmounted(() => {
+    window.removeEventListener('scroll', handleScroll)
+  })
+})
+
+const scrollToTop = () => {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth',
+  })
+}
 </script>

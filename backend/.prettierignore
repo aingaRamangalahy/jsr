@@ -1,0 +1,28 @@
+# Build products
+dist/
+build/
+coverage/
+
+# Package management
+node_modules/
+package-lock.json
+yarn.lock
+
+# Environment and configuration
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Operating system files
+.DS_Store
+Thumbs.db

@@ -6,7 +6,7 @@
           class="text-xs text-gray-600 dark:text-blue-300 text-center hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
         >
           @ 2025 JS Resources
-      </p>
+        </p>
         <a
           href="https://github.com"
           target="_blank"

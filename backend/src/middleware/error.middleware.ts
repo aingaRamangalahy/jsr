@@ -29,9 +29,7 @@ export const errorHandler = (
   }
 
   // Log error
-  logger.error(
-    `${statusCode} - ${message} - ${req.originalUrl} - ${req.method} - ${req.ip}`
-  );
+  logger.error(`${statusCode} - ${message} - ${req.originalUrl} - ${req.method} - ${req.ip}`);
   logger.error(err.stack);
 
   // Send response based on environment

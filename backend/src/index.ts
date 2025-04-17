@@ -1,3 +1,5 @@
+import 'dotenv/config'; // Load environment variables from .env file
+import config from './config/constant';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -9,24 +11,28 @@ import resourceRoutes from './modules/resources/resource.routes';
 
 // Create Express application
 const app = express();
-const PORT = process.env.PORT || 3000;
+
+const { NODE_ENV, PORT, CORS_ORIGIN, RATE_LIMIT_WINDOW_MS, RATE_LIMIT_MAX } = config;
 
 // Security middleware
 app.use(helmet());
-const isProduction = process.env.NODE_ENV === 'production';
-const corsOptions = isProduction ? {
-  origin: process.env.CORS_ORIGIN || '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-} : {
-  origin: '*',
-}
+const isProduction = NODE_ENV === 'production';
+const corsOptions = isProduction
+  ? {
+      origin: CORS_ORIGIN || '*',
+      methods: ['GET', 'POST', 'PUT', 'DELETE'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+    }
+  : {
+      origin: '*',
+  };
+
 app.use(cors(corsOptions));
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000'), // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX || '100'),
+  windowMs: RATE_LIMIT_WINDOW_MS, // 15 minutes
+  max: RATE_LIMIT_MAX,
   standardHeaders: true,
   message: 'Too many requests from this IP, please try again later.',
 });
@@ -37,10 +43,19 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
+
+// Add this before your other routes
+app.get('/', (req, res) => {
+  logger.info("Root endpoint hit");
+  res.json({ message: 'Express server is running' });
+});
+
+
 app.use('/api/resources', resourceRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+  logger.info("Health check endpoint hit");
   res.json({ status: 'ok' });
 });
 
@@ -52,7 +67,7 @@ const startServer = async () => {
   try {
     await connectDB();
     app.listen(PORT, () => {
-      logger.info(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+      logger.info(`Server running in ${NODE_ENV} mode on port ${PORT}`);
     });
   } catch (error) {
     logger.error('Failed to start server:', error);
@@ -65,4 +80,10 @@ startServer();
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (error) => {
   logger.error('Unhandled Rejection:', error);
+});
+
+process.on('uncaughtException', (error) => {
+  logger.error(`Uncaught Exception: ${error.message}`);
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
 });
