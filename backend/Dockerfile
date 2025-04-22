@@ -1,7 +1,7 @@
 FROM node:18-alpine AS build
 
 # Install curl for healthcheck
-RUN apk --no-cache add curl coreutils
+RUN apk --no-cache add curl
 
 WORKDIR /app
 
@@ -9,13 +9,13 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-# Set up symlink for @common path alias
-RUN mkdir -p node_modules/@common && \ cp -r common/* node_modules/@common/
-
-# Copy source code
+# Copy source code (including scripts)
 COPY . .
 
-# Build the application
+# Set up common module symlink
+COPY ../common ./common/
+
+# Build the application (including prebuild script that copies common files)
 RUN npm run build
 
 # Production stage
@@ -34,9 +34,6 @@ RUN npm ci --only=production
 
 # Copy built application from build stage
 COPY --from=build /app/dist ./dist
-
-# Copy common directory for runtime
-COPY --from=build /app/common ./common
 
 # Create logs directory
 RUN mkdir -p logs
