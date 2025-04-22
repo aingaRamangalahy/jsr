@@ -1,7 +1,7 @@
 FROM node:18-alpine AS build
 
 # Install curl for healthcheck
-RUN apk --no-cache add curl
+RUN apk --no-cache add curl coreutils
 
 WORKDIR /app
 
