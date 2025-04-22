@@ -2,7 +2,8 @@
 
 A platform to discover, share, and recommend JavaScript learning resources for developers of all skill levels.
 
-![jsresources.dev Screenshot](https://via.placeholder.com/800x400?text=JS+Resources+Screenshot)
+![image](https://github.com/user-attachments/assets/b89befb0-f562-4e4a-bb12-26cd2396a31f)
+
 
 ## 🌟 Features
 
