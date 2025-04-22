@@ -9,6 +9,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
+# Set up symlink for @common path alias
+RUN mkdir -p node_modules/@common && \ cp -r common/* node_modules/@common/
+
 # Copy source code
 COPY . .
 
@@ -31,6 +34,9 @@ RUN npm ci --only=production
 
 # Copy built application from build stage
 COPY --from=build /app/dist ./dist
+
+# Copy common directory for runtime
+COPY --from=build /app/common ./common
 
 # Create logs directory
 RUN mkdir -p logs
