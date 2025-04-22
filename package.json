@@ -1,0 +1,14 @@
+{
+    "name": "jsr",
+    "version": "1.0.0",
+    "description": "JavaScript Resources Project",
+    "scripts": {
+      "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+      "start:frontend": "cd frontend && npm run dev",
+      "start:backend": "cd backend && npm run dev",
+      "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install"
+    },
+    "devDependencies": {
+      "concurrently": "^8.2.2"
+    }
+  }

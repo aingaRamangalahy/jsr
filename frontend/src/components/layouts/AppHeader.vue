@@ -1,6 +1,6 @@
 <template>
   <header
-  class="bg-white dark:bg-[#1e1f23] border-b border-gray-200 dark:border-[#27292f] sticky top-0 z-10 shadow-sm"
+    class="bg-white dark:bg-[#1e1f23] border-b border-gray-200 dark:border-[#27292f] sticky top-0 z-10 shadow-sm"
   >
     <div class="container mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center">
@@ -12,8 +12,12 @@
         </button>
         <router-link to="/" class="flex items-center">
           <div class="flex items-end relative">
-            <span class="text-blue-600 dark:text-indigo-400 font-bold text-xl md:text-2xl">jsresources</span>
-            <span class="font-bold text-sm ml-1 text-gray-900 dark:text-blue-300 absolute -top-1 left-1">
+            <span class="text-blue-600 dark:text-indigo-400 font-bold text-xl md:text-2xl">
+              jsresources
+            </span>
+            <span
+              class="font-bold text-sm ml-1 text-gray-900 dark:text-blue-300 absolute -top-1 left-1"
+            >
               dev
             </span>
           </div>
@@ -99,18 +103,18 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed } from 'vue'
-  import ThemeToggle from '../ui/ThemeToggle.vue'
-  import InputText from '@/volt/InputText.vue'
-  import Button from '@/volt/Button.vue'
-  import { useFilters } from '@/composables/useFilters'
+import { ref, computed } from 'vue'
+import ThemeToggle from '../ui/ThemeToggle.vue'
+import InputText from '@/volt/InputText.vue'
+import Button from '@/volt/Button.vue'
+import { useFilters } from '@/composables/useFilters'
 
-  const isMenuOpen = ref(false)
-  const { filters, setSearchQuery } = useFilters()
+const isMenuOpen = ref(false)
+const { filters, setSearchQuery } = useFilters()
 
-  // Create computed property for the search query
-  const searchQuery = computed({
-    get: () => filters.value.search,
-    set: (value) => setSearchQuery(value),
-  })
+// Create computed property for the search query
+const searchQuery = computed({
+  get: () => filters.value.search,
+  set: (value) => setSearchQuery(value),
+})
 </script>

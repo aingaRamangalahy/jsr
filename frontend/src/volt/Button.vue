@@ -13,15 +13,15 @@
 </template>
 
 <script setup lang="ts">
-  import Button, { type ButtonPassThroughOptions, type ButtonProps } from 'primevue/button'
-  import { ref } from 'vue'
-  import { ptViewMerge } from './utils'
+import Button, { type ButtonPassThroughOptions, type ButtonProps } from 'primevue/button'
+import { ref } from 'vue'
+import { ptViewMerge } from './utils'
 
-  interface Props extends /* @vue-ignore */ ButtonProps {}
-  defineProps<Props>()
+interface Props extends /* @vue-ignore */ ButtonProps {}
+defineProps<Props>()
 
-  const theme = ref<ButtonPassThroughOptions>({
-    root: `inline-flex cursor-pointer select-none items-center justify-center overflow-hidden relative
+const theme = ref<ButtonPassThroughOptions>({
+  root: `inline-flex cursor-pointer select-none items-center justify-center overflow-hidden relative
         px-3 py-2 gap-2 rounded-md disabled:pointer-events-none disabled:opacity-60 transition-colors duration-200
         bg-primary enabled:hover:bg-primary-emphasis enabled:active:bg-primary-emphasis-alt text-primary-contrast
         border border-primary enabled:hover:border-primary-emphasis enabled:active:border-primary-emphasis-alt
@@ -45,12 +45,12 @@
         dark:p-text:border-transparent dark:enabled:hover:p-text:border-transparent dark:enabled:active:p-text:border-transparent
         dark:p-text:text-primary dark:enabled:hover:p-text:text-primary dark:enabled:active:p-text:text-primary
     `,
-    loadingIcon: ``,
-    icon: `p-right:order-1 p-bottom:order-2`,
-    label: `font-medium p-icon-only:invisible p-icon-only:w-0
+  loadingIcon: ``,
+  icon: `p-right:order-1 p-bottom:order-2`,
+  label: `font-medium p-icon-only:invisible p-icon-only:w-0
         p-small:text-sm p-large:text-[1.125rem]`,
-    pcBadge: {
-      root: `min-w-4 h-4 leading-4 bg-primary-contrast rounded-full text-primary text-xs font-bold`,
-    },
-  })
+  pcBadge: {
+    root: `min-w-4 h-4 leading-4 bg-primary-contrast rounded-full text-primary text-xs font-bold`,
+  },
+})
 </script>

@@ -113,85 +113,72 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue'
+import { ref } from 'vue'
 
-  import Card from '@/volt/Card.vue'
-  import Button from '@/volt/Button.vue'
-  import Chip from '@/volt/Chip.vue'
-  import { BookOpenIcon, GlobeIcon, TwitterIcon, YoutubeIcon } from 'lucide-vue-next'
+import Card from '@/volt/Card.vue'
+import Button from '@/volt/Button.vue'
+import Chip from '@/volt/Chip.vue'
+import { BookOpenIcon, GlobeIcon, TwitterIcon, YoutubeIcon } from 'lucide-vue-next'
+import type { Resource } from '@common/types/resource'
 
-  interface Resource {
-    id: number
-    title: string
-    description: string
-    url: string
-    type: string
-    image: string
-    skillLevel: string
-    tags: string[]
-    rating: number
-    votes: number
-    dateAdded: string
+const props = defineProps<{
+  resource: Resource
+}>()
+
+const voted = ref(false)
+const bookmarked = ref(false)
+const voteCount = ref(props.resource.votes || 0)
+
+const handleVote = () => {
+  if (voted.value) {
+    voteCount.value--
+  } else {
+    voteCount.value++
   }
+  voted.value = !voted.value
+}
 
-  const props = defineProps<{
-    resource: Resource
-  }>()
+const toggleBookmark = () => {
+  bookmarked.value = !bookmarked.value
+}
 
-  const voted = ref(false)
-  const bookmarked = ref(false)
-  const voteCount = ref(props.resource.votes)
+const handleImageError = (e: Event) => {
+  const target = e.target as HTMLImageElement
+  target.src = 'https://via.placeholder.com/300x200?text=JS'
+}
 
-  const handleVote = () => {
-    if (voted.value) {
-      voteCount.value--
-    } else {
-      voteCount.value++
-    }
-    voted.value = !voted.value
+const getTypeIcon = (type: string) => {
+  switch (type) {
+    case 'book':
+      return BookOpenIcon
+    case 'youtube':
+      return YoutubeIcon
+    case 'twitter':
+      return TwitterIcon
+    default:
+      return GlobeIcon
   }
+}
 
-  const toggleBookmark = () => {
-    bookmarked.value = !bookmarked.value
+const getSkillLevelChipClass = (level: string) => {
+  const normalizedLevel = (level || '').toLowerCase().trim()
+  switch (normalizedLevel) {
+    case 'beginner':
+      return 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-teal-400'
+    case 'intermediate':
+      return 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-400'
+    case 'advanced':
+      return 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-blue-400'
+    default:
+      return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
   }
+}
 
-  const handleImageError = (e: Event) => {
-    const target = e.target as HTMLImageElement
-    target.src = 'https://via.placeholder.com/300x200?text=JS'
-  }
+const formatSkillLevel = (level: string) => {
+  return level.charAt(0).toUpperCase() + level.slice(1)
+}
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'book':
-        return BookOpenIcon
-      case 'youtube':
-        return YoutubeIcon
-      case 'twitter':
-        return TwitterIcon
-      default:
-        return GlobeIcon
-    }
-  }
-
-  const getSkillLevelChipClass = (level: string) => {
-    const normalizedLevel = (level || '').toLowerCase().trim()
-    switch (normalizedLevel) {
-      case 'beginner':
-        return 'bg-green-100 text-green-800 dark:bg-green-950 dark:text-teal-400'
-      case 'intermediate':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-400'
-      case 'advanced':
-        return 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-blue-400'
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'
-    }
-  }
-
-  const formatSkillLevel = (level: string) => {
-    return level.charAt(0).toUpperCase() + level.slice(1)
-  }
-
-  const visitResource = (url: string) => {
-    window.open(url, '_blank')
-  }
+const visitResource = (url: string) => {
+  window.open(url, '_blank')
+}
 </script>

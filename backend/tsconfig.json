@@ -5,11 +5,15 @@
       "moduleResolution": "NodeNext",
       "esModuleInterop": true,
       "outDir": "./dist",
-      "rootDir": "./src",
+      "rootDir": "..",
       "strict": true,
       "skipLibCheck": true,
-      "forceConsistentCasingInFileNames": true
+      "forceConsistentCasingInFileNames": true,
+      "paths": {
+        "@/*": ["./src/*"],
+        "@common/*": ["../common/*"],
+      }
     },
-    "include": ["src/**/*"],
+    "include": ["src/**/*", "../common/**/*"],
     "exclude": ["node_modules"]
   }
