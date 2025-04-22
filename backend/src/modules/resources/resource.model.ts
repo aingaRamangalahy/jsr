@@ -49,10 +49,7 @@ const resourceSchema = new mongoose.Schema<Resource>(
       type: [String],
       default: [],
     },
-    frameworks: {
-      type: [String],
-      default: [],
-    },
+    framework: String,
     rating: {
       type: Number,
       default: 0,

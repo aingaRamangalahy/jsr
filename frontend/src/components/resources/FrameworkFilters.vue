@@ -6,14 +6,7 @@
       >
         Popular Frameworks
       </h3>
-      <Button
-        v-if="selectedFrameworks.length > 0"
-        @click="clearFrameworks"
-        class="ml-3 text-xs text-gray-500 dark:text-blue-500 hover:text-gray-700 dark:hover:text-blue-400"
-        text
-      >
-        Clear all
-      </Button>
+
     </div>
     <div class="flex flex-wrap gap-2">
       <button
@@ -138,16 +131,6 @@ const handleFrameworkToggle = (frameworkId: string) => {
     toggleFramework(frameworkId);
   }
 };
-
-const clearFrameworks = () => {
-  if (route.path !== '/') {
-    const query = { ...route.query };
-    delete query.frameworks;
-    router.push({ path: '/', query });
-  } else {
-    updateFrameworkFilters([]);
-  }
-}
 
 // This function returns the appropriate color class based on dark mode
 const getFrameworkActiveColor = (frameworkId: string): string => {

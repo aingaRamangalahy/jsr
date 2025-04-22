@@ -33,10 +33,14 @@ const theme = ref<MenuPassThroughOptions>({
         p-focus:bg-surface-100 dark:p-focus:bg-surface-800 p-focus:text-surface-800 dark:p-focus:text-surface-0
         hover:bg-surface-100 dark:hover:bg-surface-800 hover:text-surface-800 dark:hover:text-surface-0`,
   itemLink: `cursor-pointer flex items-center no-underline overflow-hidden relative text-inherit
-        px-3 py-2 gap-2 select-none outline-none`,
+        px-3 py-2 gap-2 select-none outline-none
+        [&.active]:bg-blue-50 [&.active]:dark:bg-blue-900
+        [&.active]:text-blue-600 [&.active]:dark:text-blue-300
+        [&.active]:font-medium`,
   itemIcon: `text-surface-400 dark:text-surface-500
         p-focus:text-surface-500 dark:p-focus:text-surface-400
-        group-hover:text-surface-500 dark:group-hover:text-surface-400`,
+        group-hover:text-surface-500 dark:group-hover:text-surface-400
+        [.active_&]:text-blue-600 [.active_&]:dark:text-blue-300`,
   itemLabel: ``,
   submenuLabel: `bg-transparent px-3 py-2 text-surface-500 dark:text-surface-400 font-semibold`,
   separator: `border-t border-surface-200 dark:border-surface-700`,

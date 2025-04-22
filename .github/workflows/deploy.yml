@@ -23,6 +23,13 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
             cd apps/jsr
             git pull origin master
+
+            # Make sure .env file exists for Docker Compose to use
+            if [ ! -f .env ]; then
+              echo "Creating .env file from template"
+              cp .env.production .env
+            fi
+
             docker compose down
             docker compose build --no-cache
             docker compose up -d
