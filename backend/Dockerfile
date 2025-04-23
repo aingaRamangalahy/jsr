@@ -13,9 +13,13 @@ COPY backend/tsconfig.json ./backend/
 
 # Install dependencies using workspace feature
 RUN npm install
-RUN npm run build:common
+
+# Build the common package first
+WORKDIR /app/common
+RUN npm run build
 
 # Copy backend code
+WORKDIR /app
 COPY backend ./backend/
 
 # Build the application
@@ -34,11 +38,16 @@ WORKDIR /app
 COPY package.json ./
 COPY backend/package.json ./backend/
 COPY common/package.json ./common/
-COPY common/dist ./common/dist/
+
+# Create common/dist directory first
+RUN mkdir -p common/dist
+
+# Copy built common files from build stage
+COPY --from=build /app/common/dist ./common/dist/
 
 # Install production dependencies only
 WORKDIR /app/backend
-RUN npm ci --only=production --omit=dev
+RUN npm ci --only=production
 
 # Copy built application from build stage
 COPY --from=build /app/backend/dist ./dist
