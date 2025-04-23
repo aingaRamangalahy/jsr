@@ -47,7 +47,7 @@ COPY --from=build /app/common/dist ./common/dist/
 
 # Install production dependencies only
 WORKDIR /app/backend
-RUN npm ci --only=production
+RUN npm install --only=production --no-fund --no-audit
 
 # Copy built application from build stage
 COPY --from=build /app/backend/dist ./dist
@@ -59,4 +59,4 @@ RUN mkdir -p logs
 EXPOSE 3000
 
 # Start the application
-CMD ["node", "dist/src/index.js"]
+CMD ["node", "dist/index.js"]
