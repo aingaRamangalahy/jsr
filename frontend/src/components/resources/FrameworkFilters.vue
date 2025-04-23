@@ -6,7 +6,6 @@
       >
         Popular Frameworks
       </h3>
-
     </div>
     <div class="flex flex-wrap gap-2">
       <button
@@ -29,17 +28,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import Button from '@/volt/Button.vue'
-import { useFilters } from '@/composables/useFilters'
-import { useRoute, useRouter } from 'vue-router'
+import { computed } from 'vue';
+import { useFilters } from '@/composables/useFilters';
+import { useRoute, useRouter } from 'vue-router';
 
 interface Framework {
-  id: string
-  name: string
-  color: string
-  darkColor: string
-  icon: string
+  id: string;
+  name: string;
+  color: string;
+  darkColor: string;
+  icon: string;
 }
 
 const frameworks: Framework[] = [
@@ -92,17 +90,17 @@ const frameworks: Framework[] = [
     darkColor: 'bg-green-600',
     icon: '🟩',
   },
-]
+];
 
-const { filters, toggleFramework, updateFrameworkFilters } = useFilters()
-const route = useRoute()
-const router = useRouter()
+const { filters, toggleFramework, updateFrameworkFilters } = useFilters();
+const route = useRoute();
+const router = useRouter();
 
-const selectedFrameworks = computed(() => filters.value.frameworks)
+const selectedFrameworks = computed(() => filters.value.frameworks);
 
 const isSelected = (frameworkId: string): boolean => {
-  return selectedFrameworks.value.includes(frameworkId)
-}
+  return selectedFrameworks.value.includes(frameworkId);
+};
 
 // Handle framework toggle with router navigation if needed
 const handleFrameworkToggle = (frameworkId: string) => {
@@ -123,8 +121,8 @@ const handleFrameworkToggle = (frameworkId: string) => {
       path: '/',
       query: {
         ...route.query,
-        frameworks: currentFrameworks
-      }
+        frameworks: currentFrameworks,
+      },
     });
   } else {
     // Already on home, just toggle
@@ -134,10 +132,10 @@ const handleFrameworkToggle = (frameworkId: string) => {
 
 // This function returns the appropriate color class based on dark mode
 const getFrameworkActiveColor = (frameworkId: string): string => {
-  const framework = frameworks.find((f) => f.id === frameworkId)
-  if (!framework) return 'bg-blue-500 dark:bg-blue-600'
+  const framework = frameworks.find((f) => f.id === frameworkId);
+  if (!framework) return 'bg-blue-500 dark:bg-blue-600';
 
-  const isDarkMode = document.documentElement.classList.contains('dark')
-  return isDarkMode ? framework.darkColor : framework.color
-}
+  const isDarkMode = document.documentElement.classList.contains('dark');
+  return isDarkMode ? framework.darkColor : framework.color;
+};
 </script>

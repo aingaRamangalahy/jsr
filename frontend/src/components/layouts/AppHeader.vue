@@ -103,18 +103,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import ThemeToggle from '../ui/ThemeToggle.vue'
-import InputText from '@/volt/InputText.vue'
-import Button from '@/volt/Button.vue'
-import { useFilters } from '@/composables/useFilters'
+import { ref, computed } from 'vue';
+import ThemeToggle from '../ui/ThemeToggle.vue';
+import InputText from '@/volt/InputText.vue';
+import Button from '@/volt/Button.vue';
+import { useFilters } from '@/composables/useFilters';
 
-const isMenuOpen = ref(false)
-const { filters, setSearchQuery } = useFilters()
+const isMenuOpen = ref(false);
+const { filters, setSearchQuery } = useFilters();
 
 // Create computed property for the search query
 const searchQuery = computed({
   get: () => filters.value.search,
   set: (value) => setSearchQuery(value),
-})
+});
 </script>

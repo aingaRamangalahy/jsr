@@ -22,15 +22,15 @@
 </template>
 
 <script setup lang="ts">
-import AppHeader from '@/components/layouts/AppHeader.vue'
-import AppSidebar from '@/components/layouts/AppSidebar.vue'
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
+import AppHeader from '@/components/layouts/AppHeader.vue';
+import AppSidebar from '@/components/layouts/AppSidebar.vue';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 
-const route = useRoute()
-const routesWithoutSidebar = ['/add-resource']
+const route = useRoute();
+const routesWithoutSidebar = ['/add-resource'];
 
 const shouldShowSidebar = computed(() => {
-  return !routesWithoutSidebar.includes(route.path)
-})
+  return !routesWithoutSidebar.includes(route.path);
+});
 </script>

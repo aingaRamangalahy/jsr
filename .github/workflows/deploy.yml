@@ -22,6 +22,16 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
             cd apps/jsr
+            
+            # Check disk space before cleanup
+            echo "Current disk space:"
+            df -h /
+            
+            # Clean up Docker resources to save space
+            echo "Cleaning up Docker resources..."
+            docker system prune -a -f
+            
+            # Update code
             git pull origin master
 
             # Make sure .env file exists for Docker Compose to use
@@ -29,8 +39,21 @@ jobs:
               echo "Creating .env file from template"
               cp .env.production .env
             fi
-
+            
+            # Build and start services with workspace npm package approach
             docker compose down
-            docker compose build --no-cache
-            docker compose up -d
+            
+            # Build and start services incrementally to manage disk space
+            echo "Building and starting MongoDB..."
+            docker compose up -d mongodb
+            
+            echo "Building and starting Backend..."
+            docker compose up -d --build backend
+            
+            echo "Building and starting Frontend..."
+            docker compose up -d --build frontend
+            
+            # Final disk space check
+            echo "Final disk space:"
+            df -h /
           EOF

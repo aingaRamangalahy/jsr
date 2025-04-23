@@ -13,12 +13,12 @@
 </template>
 
 <script setup lang="ts">
-import Divider, { type DividerPassThroughOptions, type DividerProps } from 'primevue/divider'
-import { ref } from 'vue'
-import { ptViewMerge } from './utils'
+import Divider, { type DividerPassThroughOptions, type DividerProps } from 'primevue/divider';
+import { ref } from 'vue';
+import { ptViewMerge } from './utils';
 
 interface Props extends /* @vue-ignore */ DividerProps {}
-defineProps<Props>()
+defineProps<Props>();
 
 const theme = ref<DividerPassThroughOptions>({
   root: `p-horizontal:flex p-horizontal:w-full p-horizontal:relative p-horizontal:items-center p-horizontal:my-4 p-horizontal:mx-0 p-horizontal:py-0 p-horizontal:px-4
@@ -30,5 +30,5 @@ const theme = ref<DividerPassThroughOptions>({
         p-solid:before:border-solid p-dashed:before:border-dashed p-dotted:before:border-dotted`,
   content: `z-10 bg-surface-0 dark:bg-surface-900 text-surface-700 dark:text-surface-0
         p-horizontal:py-0 p-horizontal:px-2 p:vertical:py-2 p:vertical:px-0`,
-})
+});
 </script>

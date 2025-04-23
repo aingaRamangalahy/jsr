@@ -13,12 +13,12 @@
 </template>
 
 <script setup lang="ts">
-import Card, { type CardPassThroughOptions, type CardProps } from 'primevue/card'
-import { ref } from 'vue'
-import { ptViewMerge } from './utils'
+import Card, { type CardPassThroughOptions, type CardProps } from 'primevue/card';
+import { ref } from 'vue';
+import { ptViewMerge } from './utils';
 
 interface Props extends /* @vue-ignore */ CardProps {}
-defineProps<Props>()
+defineProps<Props>();
 
 const theme = ref<CardPassThroughOptions>({
   root: `flex flex-col rounded-xl
@@ -33,5 +33,5 @@ const theme = ref<CardPassThroughOptions>({
   subtitle: `text-gray-500 dark:text-gray-400`,
   content: ``,
   footer: ``,
-})
+});
 </script>

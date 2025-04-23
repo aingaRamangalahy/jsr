@@ -52,15 +52,15 @@
 </template>
 
 <script setup lang="ts">
-import ResourceCard from './ResourceCard.vue'
-import Button from '@/volt/Button.vue'
-import { useResourceStore } from '@/stores/resource'
-import { storeToRefs } from 'pinia'
+import ResourceCard from './ResourceCard.vue';
+import Button from '@/volt/Button.vue';
+import { useResourceStore } from '@/stores/resource';
+import { storeToRefs } from 'pinia';
 
-const resourceStore = useResourceStore()
-const { fetchResources } = resourceStore
-const { filteredResources, isLoading, error } = storeToRefs(resourceStore)
+const resourceStore = useResourceStore();
+const { fetchResources } = resourceStore;
+const { filteredResources, isLoading, error } = storeToRefs(resourceStore);
 const refreshResources = () => {
-  fetchResources()
-}
+  fetchResources();
+};
 </script>

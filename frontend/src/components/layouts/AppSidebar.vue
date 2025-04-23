@@ -10,7 +10,7 @@
           <h3
             class="text-sm font-medium text-gray-500 dark:text-blue-300 uppercase tracking-wider mb-3"
           >
-          Resource Types
+            Resource Types
           </h3>
           <Menu :model="resourceTypeItems" class="border-none p-0 w-full" />
         </div>
@@ -34,15 +34,15 @@
 </template>
 
 <script setup lang="ts">
-import AppFooter from '@/components/layouts/AppFooter.vue'
-import Menu from '@/volt/Menu.vue'
-import { computed } from 'vue'
-import { useFilters } from '@/composables/useFilters'
-import { useRoute, useRouter } from 'vue-router'
+import AppFooter from '@/components/layouts/AppFooter.vue';
+import Menu from '@/volt/Menu.vue';
+import { computed } from 'vue';
+import { useFilters } from '@/composables/useFilters';
+import { useRoute, useRouter } from 'vue-router';
 
-const { filters, updateFilter } = useFilters()
-const route = useRoute()
-const router = useRouter()
+const { filters, updateFilter } = useFilters();
+const route = useRoute();
+const router = useRouter();
 
 // Resource types based on ResourceType type
 const resourceTypes = [
@@ -54,13 +54,13 @@ const resourceTypes = [
   { id: 'course', name: 'Courses', icon: 'pi pi-desktop' },
   { id: 'podcast', name: 'Podcasts', icon: 'pi pi-volume-up' },
   { id: 'must-read', name: 'Must read articles', icon: 'pi pi-star' },
-]
+];
 
 const sidebarFilters = [
   { id: 'beginner', name: 'Beginner Friendly', icon: 'pi pi-users', level: 'beginner' },
   { id: 'intermediate', name: 'Intermediate', icon: 'pi pi-shield', level: 'intermediate' },
   { id: 'advanced', name: 'Advanced Topics', icon: 'pi pi-server', level: 'advanced' },
-]
+];
 
 // Helper function to handle navigation
 const handleFilterUpdate = (filterType: string, value: string) => {
@@ -69,28 +69,29 @@ const handleFilterUpdate = (filterType: string, value: string) => {
     router.push({
       path: '/',
       query: {
-        [filterType]: value
-      }
+        [filterType]: value,
+      },
     });
   } else {
     // Already on home page, just update the filter
     updateFilter(filterType, value);
   }
-}
+};
 
 // Map resource type items to menu items
 const resourceTypeItems = computed(() => {
   return resourceTypes.map((type) => ({
     label: type.name,
     icon: type.icon,
-    class: filters.value.type === type.id
-      ? 'bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-medium rounded-md'
-      : '',
+    class:
+      filters.value.type === type.id
+        ? 'bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-300 font-medium rounded-md'
+        : '',
     command: () => {
       handleFilterUpdate('type', type.id);
     },
-  }))
-})
+  }));
+});
 
 // Map filter items to menu items
 const filterItems = computed(() => {
@@ -107,6 +108,6 @@ const filterItems = computed(() => {
       if (filter.sort) handleFilterUpdate('sortBy', filter.sort);
       if (filter.level) handleFilterUpdate('skillLevel', filter.level);
     },
-  }))
-})
+  }));
+});
 </script>

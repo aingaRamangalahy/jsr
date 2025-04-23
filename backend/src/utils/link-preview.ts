@@ -1,6 +1,6 @@
 import dns from 'node:dns';
 import { getLinkPreview } from 'link-preview-js';
-import { LinkMetadata } from '@common/types/resource';
+import { LinkMetadata } from '@jsr/common';
 
 export const getPreview = async (url: string): Promise<LinkMetadata> => {
   try {

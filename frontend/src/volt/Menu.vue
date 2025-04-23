@@ -14,12 +14,12 @@
 </template>
 
 <script setup lang="ts">
-import Menu, { type MenuPassThroughOptions, type MenuProps } from 'primevue/menu'
-import { ref } from 'vue'
-import { ptViewMerge } from './utils'
+import Menu, { type MenuPassThroughOptions, type MenuProps } from 'primevue/menu';
+import { ref } from 'vue';
+import { ptViewMerge } from './utils';
 
 interface Props extends /* @vue-ignore */ MenuProps {}
-defineProps<Props>()
+defineProps<Props>();
 
 const theme = ref<MenuPassThroughOptions>({
   root: `bg-surface-0 dark:bg-[#1e1f23]
@@ -50,10 +50,10 @@ const theme = ref<MenuPassThroughOptions>({
     leaveActiveClass: 'transition-opacity duration-100 ease-linear',
     leaveToClass: 'opacity-0',
   },
-})
+});
 
-const el = ref()
+const el = ref();
 defineExpose({
   toggle: (event: any) => el.value.toggle(event),
-})
+});
 </script>

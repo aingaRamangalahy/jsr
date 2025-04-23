@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import ResourceModel from './resource.model';
-import { ResourceCreateDTO, ResourceUpdateDTO } from '@common/types/resource';
+import { ResourceCreateDTO, ResourceUpdateDTO } from '@jsr/common';
 import { getPreview } from '../../utils/link-preview';
 import { AppError } from '../../middleware/error.middleware';
 

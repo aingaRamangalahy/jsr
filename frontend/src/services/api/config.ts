@@ -1,7 +1,7 @@
-import axios from 'axios'
+import axios from 'axios';
 
 // Get the base URL from environment variables or use a default
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 // Create axios instance with default config
 const apiClient = axios.create({
@@ -11,7 +11,7 @@ const apiClient = axios.create({
     Accept: 'application/json',
   },
   timeout: 10_000,
-})
+});
 
 // Request interceptor for API calls
 apiClient.interceptors.request.use(
@@ -21,25 +21,25 @@ apiClient.interceptors.request.use(
     // if (token) {
     //   config.headers.Authorization = `Bearer ${token}`;
     // }
-    return config
+    return config;
   },
   (error) => {
-    return Promise.reject(error)
+    return Promise.reject(error);
   },
-)
+);
 
 // Response interceptor for API calls
 apiClient.interceptors.response.use(
   (response) => {
-    return response
+    return response;
   },
   async (error) => {
-    const originalRequest = error.config
+    const originalRequest = error.config;
 
     // Handle specific error cases
     if (error.response) {
       // Server responded with an error status
-      console.error('API Error:', error.response.status, error.response.data)
+      console.error('API Error:', error.response.status, error.response.data);
 
       // Handle specific status codes when needed
       // if (error.response.status === 401 && !originalRequest._retry) {
@@ -47,14 +47,14 @@ apiClient.interceptors.response.use(
       // }
     } else if (error.request) {
       // Request was made but no response received
-      console.error('No response received:', error.request)
+      console.error('No response received:', error.request);
     } else {
       // Error setting up the request
-      console.error('Request error:', error.message)
+      console.error('Request error:', error.message);
     }
 
-    return Promise.reject(error)
+    return Promise.reject(error);
   },
-)
+);
 
-export default apiClient
+export default apiClient;

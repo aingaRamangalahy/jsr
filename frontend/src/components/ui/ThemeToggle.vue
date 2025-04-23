@@ -14,15 +14,15 @@
 </template>
 
 <script setup lang="ts">
-import { useThemeStore } from '@/stores/theme'
-import { SunIcon, MoonIcon } from 'lucide-vue-next'
-import Button from '@/volt/Button.vue'
-import { computed } from 'vue'
+import { useThemeStore } from '@/stores/theme';
+import { SunIcon, MoonIcon } from 'lucide-vue-next';
+import Button from '@/volt/Button.vue';
+import { computed } from 'vue';
 
-const themeStore = useThemeStore()
-const isDark = computed(() => themeStore.theme === 'dark')
+const themeStore = useThemeStore();
+const isDark = computed(() => themeStore.theme === 'dark');
 
 function toggleTheme() {
-  themeStore.toggleTheme()
+  themeStore.toggleTheme();
 }
 </script>

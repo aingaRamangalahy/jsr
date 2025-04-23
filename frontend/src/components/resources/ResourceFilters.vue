@@ -7,7 +7,10 @@
         <h2 class="text-lg font-semibold flex items-center text-gray-900 dark:text-blue-300">
           <i class="pi pi-filter mr-2"></i>
           Active Filters
-          <span v-if="hasActiveFilters" class="ml-2 text-xs font-normal px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full">
+          <span
+            v-if="hasActiveFilters"
+            class="ml-2 text-xs font-normal px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded-full"
+          >
             {{ activeFilterCount }}
           </span>
           <Button
@@ -79,13 +82,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import Card from '@/volt/Card.vue'
-import Select from '@/volt/Select.vue'
-import Button from '@/volt/Button.vue'
-import Chip from '@/volt/Chip.vue'
-import { useFilters } from '@/composables/useFilters'
-import type { FrameworkFilters } from '@common/types/resource'
+import { computed } from 'vue';
+import Card from '@/volt/Card.vue';
+import Select from '@/volt/Select.vue';
+import Button from '@/volt/Button.vue';
+import Chip from '@/volt/Chip.vue';
+import { useFilters } from '@/composables/useFilters';
+import type { FrameworkFilters } from '@jsr/common';
 
 const {
   filters,
@@ -95,51 +98,51 @@ const {
   getTypeOptions,
   getSkillLevelOptions,
   toggleFramework,
-  setSearchQuery
-} = useFilters()
+  setSearchQuery,
+} = useFilters();
 
 // Set up reactive bindings to store filters
 const sortBy = computed({
   get: () => filters.value.sortBy,
   set: (value) => updateFilter('sortBy', value),
-})
+});
 
 const type = computed({
   get: () => filters.value.type,
   set: (value) => updateFilter('type', value),
-})
+});
 
 const skillLevel = computed({
   get: () => filters.value.skillLevel,
   set: (value) => updateFilter('skillLevel', value),
-})
+});
 
-const sortOptions = getSortOptions()
-const typeOptions = getTypeOptions()
-const levelOptions = getSkillLevelOptions()
+const sortOptions = getSortOptions();
+const typeOptions = getTypeOptions();
+const levelOptions = getSkillLevelOptions();
 
 // Helper methods for display names
 const getTypeName = (typeId: string) => {
-  const option = typeOptions.find(opt => opt.value === typeId)
-  return option ? option.label : typeId
-}
+  const option = typeOptions.find((opt) => opt.value === typeId);
+  return option ? option.label : typeId;
+};
 
 const getSkillLevelName = (levelId: string) => {
-  const option = levelOptions.find(opt => opt.value === levelId)
-  return option ? option.label : levelId
-}
+  const option = levelOptions.find((opt) => opt.value === levelId);
+  return option ? option.label : levelId;
+};
 
 const getSortName = (sortId: string) => {
-  const option = sortOptions.find(opt => opt.value === sortId)
-  return option ? option.label : sortId
-}
+  const option = sortOptions.find((opt) => opt.value === sortId);
+  return option ? option.label : sortId;
+};
 
 // Individual filter clear methods
-const clearTypeFilter = () => updateFilter('type', 'all')
-const clearSkillLevelFilter = () => updateFilter('skillLevel', 'all')
-const clearSortFilter = () => updateFilter('sortBy', 'newest')
-const clearSearchFilter = () => setSearchQuery('')
-const removeFramework = (framework: FrameworkFilters) => toggleFramework(framework)
+const clearTypeFilter = () => updateFilter('type', 'all');
+const clearSkillLevelFilter = () => updateFilter('skillLevel', 'all');
+const clearSortFilter = () => updateFilter('sortBy', 'newest');
+const clearSearchFilter = () => setSearchQuery('');
+const removeFramework = (framework: FrameworkFilters) => toggleFramework(framework);
 
 // Check if any non-default filters are active
 const hasActiveFilters = computed(() => {
@@ -149,17 +152,17 @@ const hasActiveFilters = computed(() => {
     filters.value.skillLevel !== 'all' ||
     filters.value.frameworks.length > 0 ||
     filters.value.search !== ''
-  )
-})
+  );
+});
 
 // Count active filters for the badge
 const activeFilterCount = computed(() => {
-  let count = 0
-  if (filters.value.sortBy !== 'newest') count++
-  if (filters.value.type !== 'all') count++
-  if (filters.value.skillLevel !== 'all') count++
-  count += filters.value.frameworks.length
-  if (filters.value.search !== '') count++
-  return count
-})
+  let count = 0;
+  if (filters.value.sortBy !== 'newest') count++;
+  if (filters.value.type !== 'all') count++;
+  if (filters.value.skillLevel !== 'all') count++;
+  count += filters.value.frameworks.length;
+  if (filters.value.search !== '') count++;
+  return count;
+});
 </script>

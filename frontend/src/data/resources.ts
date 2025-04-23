@@ -1,4 +1,4 @@
-import type { Resource } from '@/types/resource'
+import type { Resource } from '@/types/resource';
 
 export const resources: Resource[] = [
   {
@@ -91,4 +91,4 @@ export const resources: Resource[] = [
     votes: 1342,
     dateAdded: '2023-03-15',
   },
-]
+];

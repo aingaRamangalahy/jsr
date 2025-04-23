@@ -16,13 +16,13 @@
 </template>
 
 <script setup lang="ts">
-import SearchIcon from '@primevue/icons/search'
-import Listbox, { type ListboxPassThroughOptions, type ListboxProps } from 'primevue/listbox'
-import { ref } from 'vue'
-import { ptViewMerge } from './utils'
+import SearchIcon from '@primevue/icons/search';
+import Listbox, { type ListboxPassThroughOptions, type ListboxProps } from 'primevue/listbox';
+import { ref } from 'vue';
+import { ptViewMerge } from './utils';
 
 interface Props extends /* @vue-ignore */ ListboxProps {}
-defineProps<Props>()
+defineProps<Props>();
 
 const theme = ref<ListboxPassThroughOptions>({
   root: `group bg-surface-0 dark:bg-surface-950 text-surface-700 dark:text-surface-0
@@ -66,5 +66,5 @@ const theme = ref<ListboxPassThroughOptions>({
   optionCheckIcon: `relative -ms-[0.375rem] me-[0.375rem] text-surface-700 dark:text-surface-0`,
   optionBlankIcon: ``,
   emptyMessage: `px-3 py-2`,
-})
+});
 </script>

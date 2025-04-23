@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { Resource } from '@common/types/resource';
+import { Resource } from '@jsr/common';
 
 const resourceSchema = new mongoose.Schema<Resource>(
   {

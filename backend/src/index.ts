@@ -25,7 +25,7 @@ const corsOptions = isProduction
     }
   : {
       origin: '*',
-  };
+    };
 
 app.use(cors(corsOptions));
 
@@ -46,16 +46,15 @@ app.use(express.urlencoded({ extended: true }));
 
 // Add this before your other routes
 app.get('/', (req, res) => {
-  logger.info("Root endpoint hit");
+  logger.info('Root endpoint hit');
   res.json({ message: 'Express server is running' });
 });
-
 
 app.use('/api/resources', resourceRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  logger.info("Health check endpoint hit");
+  logger.info('Health check endpoint hit');
   res.json({ status: 'ok' });
 });
 

@@ -5,17 +5,21 @@ RUN apk --no-cache add curl
 
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY package*.json ./
-RUN npm ci
+# Copy root package.json and workspace files
+COPY package.json ./
+COPY common ./common/
+COPY backend/package.json ./backend/
+COPY backend/tsconfig.json ./backend/
 
-# Copy source code (including scripts)
-COPY . .
+# Install dependencies using workspace feature
+RUN npm install
+RUN npm run build:common
 
-# Set up common module symlink
-COPY ../common ./common/
+# Copy backend code
+COPY backend ./backend/
 
-# Build the application (including prebuild script that copies common files)
+# Build the application
+WORKDIR /app/backend
 RUN npm run build
 
 # Production stage
@@ -26,14 +30,18 @@ RUN apk --no-cache add curl
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files and workspace configuration
+COPY package.json ./
+COPY backend/package.json ./backend/
+COPY common/package.json ./common/
+COPY common/dist ./common/dist/
 
 # Install production dependencies only
-RUN npm ci --only=production
+WORKDIR /app/backend
+RUN npm ci --only=production --omit=dev
 
 # Copy built application from build stage
-COPY --from=build /app/dist ./dist
+COPY --from=build /app/backend/dist ./dist
 
 # Create logs directory
 RUN mkdir -p logs

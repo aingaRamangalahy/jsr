@@ -12,12 +12,12 @@
 import InputText, {
   type InputTextPassThroughOptions,
   type InputTextProps,
-} from 'primevue/inputtext'
-import { ref } from 'vue'
-import { ptViewMerge } from './utils'
+} from 'primevue/inputtext';
+import { ref } from 'vue';
+import { ptViewMerge } from './utils';
 
 interface Props extends /* @vue-ignore */ InputTextProps {}
-defineProps<Props>()
+defineProps<Props>();
 
 const theme = ref<InputTextPassThroughOptions>({
   root: `appearance-none rounded-md outline-hidden
@@ -36,5 +36,5 @@ const theme = ref<InputTextPassThroughOptions>({
         p-small:text-sm p-small:px-[0.625rem] p-small:py-[0.375rem]
         p-large:text-lg p-large:px-[0.875rem] p-large:py-[0.625rem]
         transition-colors duration-200 shadow-[0_1px_2px_0_rgba(18,18,23,0.05)]`,
-})
+});
 </script>
