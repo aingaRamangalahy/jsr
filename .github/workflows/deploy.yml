@@ -32,19 +32,9 @@ jobs:
               cp .env.production .env
             fi
             
-            # Build and start services with workspace npm package approach
+            # Build and start services
             docker compose down
-            
-            # Build and start services incrementally to manage disk space
-            echo "Building and starting MongoDB..."
-            docker compose up -d mongodb
-            
-            echo "Building and starting Backend..."
-            docker compose up -d --build backend
-            
-            echo "Building and starting Frontend..."
-            docker compose up -d --build frontend
-            
+            docker compose up -d --build
             # Final disk space check
             echo "Final disk space:"
             df -h /
