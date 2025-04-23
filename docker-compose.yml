@@ -9,7 +9,7 @@ services:
     depends_on:
       - backend
     environment:
-      - VITE_API_URL=http://backend/api
+      - VITE_API_URL=${VITE_API_URL}
     networks:
       - jsr-network
 
@@ -21,12 +21,12 @@ services:
       - "3000:3000"
     restart: always
     environment:
-      - NODE_ENV=production
-      - PORT=3000
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${PORT}
       - MONGODB_URI=${MONGODB_URI}
-      - CORS_ORIGIN=https://jsresources.dev,http://frontend
-      - RATE_LIMIT_WINDOW_MS=900000
-      - RATE_LIMIT_MAX=100
+      - CORS_ORIGIN=${CORS_ORIGIN}
+      - RATE_LIMIT_WINDOW_MS=${RATE_LIMIT_WINDOW_MS}
+      - RATE_LIMIT_MAX=${RATE_LIMIT_MAX}
     volumes:
       - backend_logs:/app/logs
     networks:
