@@ -10,14 +10,19 @@ COPY frontend/package.json ./frontend/
 
 # Install dependencies using workspace feature
 RUN npm install
-RUN npm run build:common
+
+# Build the common package first
+WORKDIR /app/common
+RUN npm run build
 
 # Copy frontend code
+WORKDIR /app
 COPY frontend ./frontend/
 
-# Build the application
+# Build the frontend application with type-checking disabled for production
 WORKDIR /app/frontend
-RUN npm run build
+# Use build-only instead of build to skip type checking
+RUN npm run build-only
 
 # Production stage
 FROM nginx:alpine

@@ -190,6 +190,7 @@
                 type: formData.type as ResourceType,
                 skillLevel: formData.skillLevel as SkillLevel,
                 tags: formData.tags,
+                framework: formData.framework || 'none',
               }"
             />
           </div>
@@ -236,7 +237,8 @@ import { VueSpinner } from 'vue3-spinners';
 const router = useRouter();
 const resourceStore = useResourceStore();
 const submitting = ref(false);
-const error = ref('');
+
+const error = ref<string>('');
 const prefetching = ref(false);
 
 const urlPasted = ref(false);
@@ -249,7 +251,7 @@ interface FormData {
   image: string;
   skillLevel: string;
   tags: string[];
-  frameworks: string[];
+  framework: string;
 }
 
 const initialFormData: FormData = {
@@ -260,7 +262,7 @@ const initialFormData: FormData = {
   image: '',
   skillLevel: 'beginner',
   tags: [],
-  frameworks: [],
+  framework: '',
 };
 
 const formData = ref<FormData>({ ...initialFormData });
@@ -337,8 +339,8 @@ const handleSubmit = async () => {
       type: formData.value.type as ResourceType,
       skillLevel: formData.value.skillLevel as SkillLevel,
     });
-  } catch (error) {
-    console.error('Error adding resource:', error);
+  } catch (err) {
+    console.error('Error adding resource:', err);
     error.value = 'Failed to add resource. Please try again.';
     return;
   } finally {

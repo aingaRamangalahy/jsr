@@ -76,17 +76,17 @@ export const useResourceStore = defineStore('resources', () => {
     // Sorting
     switch (filters.value.sortBy) {
       case 'oldest':
-        result.sort((a, b) => new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime());
+        result.sort((a, b) => new Date(a.dateAdded as string).getTime() - new Date(b.dateAdded as string).getTime());
         break;
       case 'popular':
-        result.sort((a, b) => b.votes - a.votes);
+        result.sort((a, b) => (b.votes as number) - (a.votes as number));
         break;
       case 'rating':
-        result.sort((a, b) => b.rating - a.rating);
+        result.sort((a, b) => (b.rating as number) - (a.rating as number));
         break;
       case 'newest':
       default:
-        result.sort((a, b) => new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime());
+        result.sort((a, b) => new Date(b.dateAdded as string).getTime() - new Date(a.dateAdded as string).getTime());
         break;
     }
 
