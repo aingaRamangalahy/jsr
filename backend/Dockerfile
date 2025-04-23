@@ -26,6 +26,9 @@ COPY backend ./backend/
 WORKDIR /app/backend
 RUN npm run build
 
+# Check the build output - this helps debugging
+RUN find /app -name "*.js" | sort
+
 # Production stage
 FROM node:18-alpine
 
