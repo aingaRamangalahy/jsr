@@ -8,12 +8,12 @@ A platform to discover, share, and recommend JavaScript learning resources for d
 ## 🌟 Features
 
 - **Resource Discovery**: Browse a curated collection of JavaScript learning materials including websites, books, YouTube channels, and more
-- **Dark/Light Mode**: Seamlessly switch between themes with a daily.dev inspired dark theme
 - **Filtering System**: Find exactly what you need with multiple filtering options
 - **Framework Filters**: Quickly find resources related to specific frameworks (React, Vue, Angular, etc.)
 - **Responsive Design**: Works great on both desktop and mobile devices
 
 # comming soon
+- **Login via github account**: give users more access by login via github account
 - **Add Resources**: Contribute by adding your favorite JavaScript learning materials
 
 ## 🛠️ Tech Stack

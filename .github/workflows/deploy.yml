@@ -23,14 +23,6 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
             cd apps/jsr
             
-            # Check disk space before cleanup
-            echo "Current disk space:"
-            df -h /
-            
-            # Clean up Docker resources to save space
-            echo "Cleaning up Docker resources..."
-            docker system prune -a -f
-            
             # Update code
             git pull origin master
 
