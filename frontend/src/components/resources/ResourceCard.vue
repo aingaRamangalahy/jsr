@@ -144,7 +144,7 @@ const toggleBookmark = () => {
 
 const handleImageError = (e: Event) => {
   const target = e.target as HTMLImageElement;
-  target.src = 'https://via.placeholder.com/300x200?text=JS';
+  target.src = 'https://images.pexels.com/photos/965345/pexels-photo-965345.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1';
 };
 
 const getTypeIcon = (type: string) => {
