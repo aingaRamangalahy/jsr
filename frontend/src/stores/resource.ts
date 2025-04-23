@@ -28,7 +28,7 @@ export const useResourceStore = defineStore('resources', () => {
 
   // Computed property for filtered resources
   const filteredResources = computed(() => {
-    let result = [...resources.value];
+    let result = Array.isArray(resources.value) ? [...resources.value] : [];
 
     if (filters.value.search.trim()) {
       const searchLower = filters.value.search.toLowerCase();
