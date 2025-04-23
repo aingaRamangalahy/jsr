@@ -12,8 +12,16 @@ import resourceRoutes from './modules/resources/resource.routes';
 // Create Express application
 const app = express();
 
-const { NODE_ENV, PORT, CORS_ORIGIN, RATE_LIMIT_WINDOW_MS, RATE_LIMIT_MAX } = config;
+const { NODE_ENV, PORT, CORS_ORIGIN, RATE_LIMIT_WINDOW_MS, RATE_LIMIT_MAX, MONGO_URI } = config;
 
+console.log("Environment Variables:", {
+  NODE_ENV,
+  PORT,
+  CORS_ORIGIN,
+  RATE_LIMIT_WINDOW_MS,
+  RATE_LIMIT_MAX,
+  MONGO_URI,
+});
 // Security middleware
 app.use(helmet());
 const isProduction = NODE_ENV === 'production';

@@ -35,7 +35,7 @@ jobs:
             # Build and start services
             docker compose down
             docker compose build --no-cache
-            docker compose up -d
+            docker compose --env-file .env.production  up -d
             # Final disk space check
             echo "Final disk space:"
             df -h /
