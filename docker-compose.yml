@@ -9,7 +9,7 @@ services:
     depends_on:
       - backend
     environment:
-      - VITE_API_URL=http://localhost:3000/api
+      - VITE_API_URL=https://api.jsresources.dev/api
     networks:
       - jsr-network
 
@@ -24,7 +24,7 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - MONGODB_URI=${MONGODB_URI}
-      - CORS_ORIGIN=http://localhost:3001
+      - CORS_ORIGIN=https://jsresources.dev
       - RATE_LIMIT_WINDOW_MS=900000
       - RATE_LIMIT_MAX=100
     volumes:
