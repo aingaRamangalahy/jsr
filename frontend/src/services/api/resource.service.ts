@@ -5,7 +5,7 @@ import type { FilterState } from '@jsr/common';
 export const resourceService = {
   // Get all resources with filtering
   async getResources(filters: FilterState = {} as FilterState) {
-    const response = await apiClient.get('/resources');
+    const response = await apiClient.get('/api/resources');
     return response.data;
   },
 
@@ -17,25 +17,25 @@ export const resourceService = {
 
   // Create new resource
   async createResource(resource: ResourceCreateDTO) {
-    const response = await apiClient.post('/resources', resource);
+    const response = await apiClient.post('/api/resources', resource);
     return response.data;
   },
 
   // Update resource
   async updateResource(id: string, resource: ResourceUpdateDTO) {
-    const response = await apiClient.put(`/resources/${id}`, resource);
+    const response = await apiClient.put(`/api/resources/${id}`, resource);
     return response.data;
   },
 
   // Delete resource
   async deleteResource(id: string) {
-    const response = await apiClient.delete(`/resources/${id}`);
+    const response = await apiClient.delete(`/api/resources/${id}`);
     return response.data;
   },
 
   // Prefetch resource
   async preFetchUrl(url: string) {
-    const response = await apiClient.get('/resources/prefetch', {
+    const response = await apiClient.get('/api/resources/prefetch', {
       params: { url },
     });
     return response.data;
