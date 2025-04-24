@@ -1,5 +1,5 @@
 import apiClient from './config';
-import type { Resource, ResourceCreateDTO, ResourceUpdateDTO } from '@jsr/common';
+import type { ResourceCreateDTO, ResourceUpdateDTO } from '@jsr/common';
 import type { FilterState } from '@jsr/common';
 
 export const resourceService = {
