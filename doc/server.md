@@ -92,15 +92,6 @@ services:
     build: ./backend
     ports:
       - "5000:5000"
-    depends_on:
-      - mongo
-
-  mongo:
-    image: mongo
-    volumes:
-      - ./data:/data/db
-    ports:
-      - "27017:27017"
 ```
 
 ### 🚀 Deploy App
@@ -175,7 +166,28 @@ sudo certbot renew --dry-run
   - Type: `A`
   - Value: `your-server-ip`
 
----
+
+
+## 🗄️ MongoDB Atlas Setup
+
+### 1. Create a MongoDB Atlas Account
+- Sign up at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+- Create a new cluster (the free tier is sufficient for most small projects)
+
+### 2. Configure Database Access
+- Create a database user with appropriate permissions
+- Add your IP to the IP Access List or allow access from anywhere (0.0.0.0/0)
+
+### 3. Get Your Connection String
+- Click "Connect" on your cluster 
+- Choose "Connect your application"
+- Copy the connection string, which should look like:
+
+```shell
+mongodb+srv://<username>:<password>@<cluster>.mongodb.net/jsresources?retryWrites=true&w=majority
+```
+
+
 
 📝 This doc will 📈 as the app matures. Customize to match your VPS 🧱 setup!
 ```
