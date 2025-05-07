@@ -1,2 +1,7 @@
+.cursor/
+memory-bank/
+
 node_modules/
+dist/
+
 .env

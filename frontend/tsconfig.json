@@ -1,11 +1,24 @@
 {
-  "files": [],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    },
-    {
-      "path": "./tsconfig.app.json"
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
     }
+  },
+  "include": [
+    "src/**/*.ts", 
+    "src/**/*.d.ts", 
+    "src/**/*.tsx", 
+    "src/**/*.vue",
+    "src/services/**/*.ts",
+    "src/components/ui/**/*.ts"
+  ],
+  "exclude": ["node_modules", "dist"],
+  "references": [
+    { "path": "../shared" }
   ]
-}
+} 
