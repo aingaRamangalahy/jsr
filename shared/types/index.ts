@@ -36,6 +36,7 @@ export interface Category {
   id: string;
   name: string;
   description: string;
+  iconUrl?: string; // Optional icon URL for the category
   createdAt: Date;
   updatedAt: Date;
 }
@@ -89,6 +90,15 @@ export interface Bookmark {
   resourceId: string | Resource;
   userId: string | User;
   createdAt: Date;
+}
+
+export interface Vote {
+  id: string;
+  resourceId: string | Resource;
+  userId: string | User;
+  value: 'up' | 'down';
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 // API Response Types

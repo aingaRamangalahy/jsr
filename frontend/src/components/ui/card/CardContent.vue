@@ -1,20 +1,17 @@
-<template>
-  <div data-slot="card-content" v-bind="delegatedProps" :class="cn('p-6 pt-0', props.class)">
-    <slot />
-  </div>
-</template>
-
 <script setup lang="ts">
+import type { HTMLAttributes } from 'vue'
 import { cn } from '@/lib/utils'
-import { computed, type HTMLAttributes } from 'vue'
 
 const props = defineProps<{
   class?: HTMLAttributes['class']
 }>()
+</script>
 
-const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
-
-  return delegated
-})
-</script> 
+<template>
+  <div
+    data-slot="card-content"
+    :class="cn('px-6', props.class)"
+  >
+    <slot />
+  </div>
+</template>

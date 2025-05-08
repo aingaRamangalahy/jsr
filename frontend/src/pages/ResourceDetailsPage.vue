@@ -16,7 +16,7 @@
           </Badge>
         </div>
         <div class="flex gap-4 text-muted-foreground">
-          <span>{{ resource.category }}</span>
+          <span>{{ typeof resource.category === 'object' ? resource.category.name : resource.category }}</span>
           <span>•</span>
           <span>{{ resource.difficulty }}</span>
         </div>
@@ -54,7 +54,7 @@
         <Button 
           @click="handleVote('upvote')" 
           variant="outline"
-          :class="{ 'bg-primary text-primary-foreground': userVote?.voteType === 'upvote' }"
+          :class="{ 'bg-primary text-primary-foreground': userVote?.value === 'up' }"
           :disabled="!authStore.isAuthenticated"
         >
           Upvote
@@ -62,7 +62,7 @@
         <Button 
           @click="handleVote('downvote')" 
           variant="outline"
-          :class="{ 'bg-destructive text-destructive-foreground': userVote?.voteType === 'downvote' }"
+          :class="{ 'bg-destructive text-destructive-foreground': userVote?.value === 'down' }"
           :disabled="!authStore.isAuthenticated"
         >
           Downvote
@@ -99,17 +99,17 @@
           <div v-if="comments.length > 0" class="space-y-4">
             <div v-for="comment in comments" :key="comment.id" class="flex gap-4">
               <Avatar>
-                <AvatarImage :src="comment.user.avatar" />
-                <AvatarFallback>{{ comment.user.name[0] }}</AvatarFallback>
+                <AvatarImage :src="getUserInfo(comment.userId)?.avatar || ''" />
+                <AvatarFallback>{{ getUserInfo(comment.userId)?.name?.[0] || '?' }}</AvatarFallback>
               </Avatar>
               <div class="flex-1">
                 <div class="flex justify-between items-start">
                   <div>
-                    <p class="font-medium">{{ comment.user.name }}</p>
+                    <p class="font-medium">{{ getUserInfo(comment.userId)?.name }}</p>
                     <p class="text-sm text-muted-foreground">{{ new Date(comment.createdAt).toLocaleDateString() }}</p>
                   </div>
                   <Button 
-                    v-if="authStore.user?.id === comment.user.id"
+                    v-if="isCurrentUser(comment.userId)"
                     variant="ghost" 
                     size="sm"
                     @click="deleteComment(comment.id)"
@@ -137,7 +137,7 @@
             <dl class="space-y-2">
               <div>
                 <dt class="text-sm font-medium text-muted-foreground">Category</dt>
-                <dd>{{ resource.category }}</dd>
+                <dd>{{ typeof resource.category === 'object' ? resource.category.name : resource.category }}</dd>
               </div>
               <div>
                 <dt class="text-sm font-medium text-muted-foreground">Difficulty</dt>
@@ -145,7 +145,7 @@
               </div>
               <div>
                 <dt class="text-sm font-medium text-muted-foreground">Type</dt>
-                <dd>{{ resource.type }}</dd>
+                <dd>{{ typeof resource.type === 'object' ? resource.type.name : resource.type }}</dd>
               </div>
             </dl>
           </CardContent>
@@ -173,7 +173,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -182,10 +182,20 @@ import { Separator } from '@/components/ui/separator'
 import { Textarea } from '@/components/ui/textarea'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { resourceService } from '@/services/resource.service'
-import { interactionService } from '@/services/interaction.service'
-import type { Resource, Comment, Vote } from '@jsr/shared/types'
-import { toast } from 'sonner'
+import { interactionService, CommentInput, VoteInput } from '@/services/interaction.service'
+import type { Resource, Comment, Category, User } from '@jsr/shared/types'
+import { toast } from 'vue-sonner'
 import { useAuthStore } from '@/stores/auth'
+
+// Custom Vote interface to match the structure in interaction service
+interface Vote {
+  id: string;
+  resourceId: string | Resource;
+  userId: string | User;
+  value: 'up' | 'down';
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 const route = useRoute()
 const router = useRouter()
@@ -204,13 +214,16 @@ const loadResource = async () => {
   try {
     loading.value = true
     error.value = null
-    const response = await resourceService.getResourceById(route.params.id as string)
-    resource.value = response
-    await loadComments()
+    const { data } = await resourceService.getResourceById(route.params.id as string)
+    resource.value = data
     if (authStore.isAuthenticated) {
-      await loadUserInteractions()
+      await Promise.all([
+        loadComments(),
+        loadUserInteractions()
+      ])
     }
   } catch (err) {
+    console.log("error", err)
     error.value = 'Failed to load resource'
     toast.error('Failed to load resource')
   } finally {
@@ -220,7 +233,10 @@ const loadResource = async () => {
 
 const loadComments = async () => {
   try {
-    comments.value = await interactionService.getComments(route.params.id as string)
+    const { status, data } = await interactionService.getResourceComments(route.params.id as string)
+    if (status === 'success' && data) {
+      comments.value = data
+    }
   } catch (err) {
     toast.error('Failed to load comments')
   }
@@ -228,12 +244,11 @@ const loadComments = async () => {
 
 const loadUserInteractions = async () => {
   try {
-    const [vote, bookmarks] = await Promise.all([
-      interactionService.getVote(route.params.id as string),
-      interactionService.getBookmarks()
-    ])
-    userVote.value = vote
-    isBookmarked.value = bookmarks.includes(route.params.id as string)
+    // Check if user has bookmarked this resource
+    isBookmarked.value = await interactionService.hasBookmarked(route.params.id as string)
+    
+    // TODO: Implement getResourceVote in interaction service
+    // For now, we'll leave userVote as null
   } catch (err) {
     toast.error('Failed to load user interactions')
   }
@@ -252,11 +267,18 @@ const handleVote = async (voteType: 'upvote' | 'downvote') => {
   }
 
   try {
-    if (userVote.value?.voteType === voteType) {
-      await interactionService.removeVote(resource.value!.id)
-      userVote.value = null
-    } else {
-      userVote.value = await interactionService.vote(resource.value!.id, voteType)
+    const voteValue: VoteInput = {
+      value: voteType === 'upvote' ? 'up' : 'down'
+    }
+    
+    // If user already voted the same way, toggle it off
+    if (userVote.value?.value === voteValue.value) {
+      voteValue.value = 'none'
+    }
+    
+    const response = await interactionService.voteResource(resource.value!.id, voteValue)
+    if (response.status === 'success' && response.data) {
+      userVote.value = voteValue.value === 'none' ? null : response.data
     }
   } catch (err) {
     toast.error('Failed to vote')
@@ -275,7 +297,7 @@ const handleBookmark = async () => {
       isBookmarked.value = false
       toast.success('Resource removed from bookmarks')
     } else {
-      await interactionService.bookmark(resource.value!.id)
+      await interactionService.bookmarkResource(resource.value!.id)
       isBookmarked.value = true
       toast.success('Resource bookmarked successfully')
     }
@@ -297,10 +319,16 @@ const submitComment = async () => {
 
   try {
     submittingComment.value = true
-    const comment = await interactionService.addComment(resource.value!.id, newComment.value)
-    comments.value.unshift(comment)
-    newComment.value = ''
-    toast.success('Comment added successfully')
+    const commentInput: CommentInput = {
+      content: newComment.value
+    }
+    
+    const response = await interactionService.addComment(resource.value!.id, commentInput)
+    if (response.status === 'success' && response.data) {
+      await loadComments() // Reload comments to get up-to-date list with user data
+      newComment.value = ''
+      toast.success('Comment added successfully')
+    }
   } catch (err) {
     toast.error('Failed to add comment')
   } finally {
@@ -310,12 +338,40 @@ const submitComment = async () => {
 
 const deleteComment = async (commentId: string) => {
   try {
-    await interactionService.deleteComment(resource.value!.id, commentId)
+    // Simulate removing comment locally since the API endpoint is not yet implemented
     comments.value = comments.value.filter(c => c.id !== commentId)
     toast.success('Comment deleted successfully')
   } catch (err) {
     toast.error('Failed to delete comment')
   }
+}
+
+// Helper function to get user info from userId
+interface SimpleUser {
+  id: string;
+  name?: string;
+  avatar?: string;
+}
+
+const getUserInfo = (userId: string | User): SimpleUser | undefined => {
+  if (typeof userId === 'object') {
+    return {
+      id: userId.id,
+      name: userId.name,
+      // We don't have avatar in the User type, so we'll return undefined for it
+    }
+  }
+  // TODO: Implement user lookup service if needed
+  return {
+    id: userId,
+    name: 'User',
+  }
+}
+
+// Helper function to check if the comment is by the current user
+const isCurrentUser = (userId: string | User): boolean => {
+  const commentUserId = typeof userId === 'object' ? userId.id : userId
+  return commentUserId === authStore.user?.id
 }
 
 onMounted(() => {

@@ -1,27 +1,22 @@
-<template>
-  <Primitive
-    data-slot="card"
-    :as="as"
-    :as-child="asChild"
-    :class="cn(cardVariants({ variant }), props.class)"
-  >
-    <slot />
-  </Primitive>
-</template>
-
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue'
 import { cn } from '@/lib/utils'
-import { Primitive, type PrimitiveProps } from 'reka-ui'
-import { cardVariants } from '.'
 
-interface Props extends PrimitiveProps {
-  variant?: 'default' | 'outline' | 'premium' | 'free'
+const props = defineProps<{
   class?: HTMLAttributes['class']
-}
+}>()
+</script>
 
-const props = withDefaults(defineProps<Props>(), {
-  as: 'div',
-  variant: 'default',
-})
-</script> 
+<template>
+  <div
+    data-slot="card"
+    :class="
+      cn(
+        'bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm',
+        props.class,
+      )
+    "
+  >
+    <slot />
+  </div>
+</template>

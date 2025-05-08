@@ -1,24 +1,17 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue'
 import { cn } from '@/lib/utils'
-import { Primitive, type PrimitiveProps } from 'reka-ui'
 
-interface Props extends PrimitiveProps {
+const props = defineProps<{
   class?: HTMLAttributes['class']
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  as: 'div',
-})
+}>()
 </script>
 
 <template>
-  <Primitive
-    data-slot="header"
-    :as="as"
-    :as-child="asChild"
-    :class="cn('flex flex-col space-y-1.5 p-6', props.class)"
+  <div
+    data-slot="card-header"
+    :class="cn('@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6', props.class)"
   >
     <slot />
-  </Primitive>
-</template> 
+  </div>
+</template>
