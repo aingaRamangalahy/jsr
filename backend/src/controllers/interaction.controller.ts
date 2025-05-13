@@ -371,14 +371,14 @@ export const voteResource = async (req: Request, res: Response): Promise<void> =
     }
     
     const { resourceId } = req.params;
-    const { voteType } = req.body;
+    const { value } = req.body;
     
     // Validate vote type
-    if (!voteType || !['upvote', 'downvote'].includes(voteType)) {
+    if (!value || !['up', 'down'].includes(value)) {
       res.status(400).json({
         status: 'error',
         error: {
-          message: 'Vote type must be either upvote or downvote',
+          message: 'Vote type must be either up or down',
           code: 'INVALID_VOTE_TYPE'
         }
       });
@@ -402,7 +402,7 @@ export const voteResource = async (req: Request, res: Response): Promise<void> =
     // Update votes
     // For a real application, we would track individual user votes
     // Here we're just incrementing the counters
-    const updateField = voteType === 'upvote' ? 'votes.upvotes' : 'votes.downvotes';
+    const updateField = value === 'up' ? 'votes.upvotes' : 'votes.downvotes';
     
     const updatedResource = await ResourceModel.findByIdAndUpdate(
       resourceId,
@@ -415,7 +415,7 @@ export const voteResource = async (req: Request, res: Response): Promise<void> =
       data: {
         votes: updatedResource?.votes
       },
-      message: `Resource ${voteType}d successfully`
+      message: `Resource ${value} voted successfully`
     });
   } catch (error) {
     console.error('Error voting on resource:', error);

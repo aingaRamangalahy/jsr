@@ -1,14 +1,35 @@
 import api from './api.service'
-import type { Resource } from '@jsr/shared/types'
+import type { Resource, PricingType, ResourceStatus } from '@jsr/shared/types'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'
+
+// Define the ResourceFilters interface
+export interface ResourceFilters {
+  category?: string;
+  type?: string;
+  difficulty?: string | string[];
+  pricingType?: PricingType | PricingType[];
+  search?: string;
+}
 
 export const resourceService = {
   // Get all resources with optional filtering
   async getResources(filters: ResourceFilters = {}, page = 1, limit = 10) {
+    // Process array filters to be API-friendly
+    const processedFilters: Record<string, any> = { ...filters };
+    
+    // Convert arrays to comma-separated strings for the API
+    if (Array.isArray(processedFilters.difficulty)) {
+      processedFilters.difficulty = processedFilters.difficulty.join(',');
+    }
+    
+    if (Array.isArray(processedFilters.pricingType)) {
+      processedFilters.pricingType = processedFilters.pricingType.join(',');
+    }
+    
     const { data } = await api.get(`${API_URL}/resources`, {
       params: {
-        ...filters,
+        ...processedFilters,
         page,
         limit
       }
@@ -61,6 +82,16 @@ export const resourceService = {
       params.append('pricingType', pricingType)
     }
     const { data } = await api.get(`${API_URL}/bookmarks`, { params })
+    return data
+  },
+
+  // Get resources submitted by the current user (requires authentication)
+  async getSubmittedResources(statusFilter?: ResourceStatus | 'all') {
+    const params = new URLSearchParams()
+    if (statusFilter && statusFilter !== 'all') {
+      params.append('status', statusFilter)
+    }
+    const { data } = await api.get(`${API_URL}/resources/user/submitted`, { params })
     return data
   }
 }

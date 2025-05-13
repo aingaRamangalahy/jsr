@@ -1,4 +1,6 @@
 import axios from 'axios'
+import { useAuth } from '@/composables/useAuth'
+import { toast } from 'vue-sonner'
 
 // Create a custom axios instance
 const api = axios.create({
@@ -22,14 +24,21 @@ api.interceptors.request.use(
   }
 )
 
+// Get auth state at runtime to avoid SSR issues
+const getAuthState = () => useAuth()
+
 // Add a response interceptor to handle errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Handle authentication error (e.g., redirect to login)
+      // Handle authentication error
       localStorage.removeItem('auth_token')
-      window.location.href = '/auth/login'
+      
+      // Show auth modal instead of redirecting
+      const authState = getAuthState()
+      authState.openAuthModal()
+      toast.error('Your session has expired. Please sign in again.')
     }
     return Promise.reject(error)
   }

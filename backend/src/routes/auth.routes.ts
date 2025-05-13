@@ -1,22 +1,26 @@
 import express, { Router } from 'express';
-import { adminLogin, githubCallback } from '../controllers/auth.controller';
+import { 
+  adminLogin, 
+  syncSupabaseUser,
+  verifySupabaseToken
+} from '../controllers/auth.controller';
+import { protect } from '../middleware/auth';
 
 const router: Router = express.Router();
 
 // Admin authentication routes
 router.post('/admin/login', adminLogin);
 
-// GitHub OAuth routes
-router.get('/github', (req, res) => {
-  // Redirect to GitHub for authentication
-  // This is a placeholder for actual GitHub OAuth implementation
+// Supabase auth routes
+router.post('/sync', syncSupabaseUser);
+router.post('/verify', verifySupabaseToken);
+
+// Get current user
+router.get('/me', protect, (req, res) => {
   res.status(200).json({
     status: 'success',
-    message: 'GitHub OAuth route - to be implemented',
-    redirectUrl: 'https://github.com/login/oauth/authorize?client_id=YOUR_GITHUB_CLIENT_ID&scope=user:email'
+    data: req.user
   });
 });
-
-router.get('/github/callback', githubCallback);
 
 export default router; 

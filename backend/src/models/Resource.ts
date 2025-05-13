@@ -97,6 +97,16 @@ const resourceSchema = new Schema<ResourceDocument>({
       message: 'Paid resources must have a price greater than 0'
     }
   },
+  imageUrl: {
+    type: String,
+    trim: true,
+    match: [/^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/, 'Please provide a valid image URL']
+  },
+  providerIcon: {
+    type: String,
+    trim: true,
+    match: [/^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/, 'Please provide a valid icon URL']
+  },
   votes: {
     upvotes: {
       type: Number,

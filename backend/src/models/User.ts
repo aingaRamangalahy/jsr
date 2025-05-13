@@ -1,11 +1,15 @@
 import mongoose, { Document, Schema } from 'mongoose';
-import { User as SharedUser, UserRole } from '@jsr/shared';
+import { User as SharedUser, UserRole, AuthProvider } from '@jsr/shared';
 
 // Create a type omitting id from SharedUser since Mongoose Document also has id
 export type UserWithoutId = Omit<SharedUser, 'id'>;
 
 // Create interface extending the modified User type with Document
-export interface UserDocument extends UserWithoutId, Document {}
+export interface UserDocument extends UserWithoutId, Document {
+  supabaseId?: string;
+  provider?: AuthProvider;
+  avatarUrl?: string;
+}
 
 // Create Mongoose schema
 const userSchema = new Schema<UserDocument>({
@@ -27,6 +31,18 @@ const userSchema = new Schema<UserDocument>({
     type: String,
     unique: true,
     sparse: true // Allows null values to not be considered in the unique index
+  },
+  supabaseId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
+  provider: {
+    type: String,
+    enum: ['github', 'email']
+  },
+  avatarUrl: {
+    type: String
   },
   role: {
     type: String,

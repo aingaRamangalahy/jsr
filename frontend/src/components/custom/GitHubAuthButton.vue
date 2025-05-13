@@ -3,8 +3,11 @@
     class="w-full" 
     variant="outline" 
     @click="handleGitHubLogin"
+    :disabled="isLoading"
   >
+    <div v-if="isLoading" class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
     <svg
+      v-else
       class="mr-2 h-4 w-4"
       aria-hidden="true"
       focusable="false"
@@ -24,14 +27,25 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { Button } from '@/components/ui/button'
+import { useAuthStore } from '@/stores/auth.store'
 
-const handleGitHubLogin = () => {
-  const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID
-  const redirectUri = import.meta.env.VITE_GITHUB_REDIRECT_URI
-  const scope = 'read:user user:email'
-  
-  const url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`
-  window.location.href = url
+defineOptions({
+  name: 'GitHubAuthButton'
+})
+
+const authStore = useAuthStore()
+const isLoading = ref(false)
+
+const handleGitHubLogin = async () => {
+  isLoading.value = true
+  try {
+    await authStore.loginWithGitHub()
+  } catch (error) {
+    console.error('GitHub login failed:', error)
+  } finally {
+    isLoading.value = false
+  }
 }
 </script> 

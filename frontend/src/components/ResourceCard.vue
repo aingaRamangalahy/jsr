@@ -2,6 +2,15 @@
   <Card
     class="h-full min-w-[300px] w-full relative flex flex-col transition-all hover:shadow-md group overflow-hidden"
   >
+    <!-- Resource Image (if available) -->
+    <div v-if="props.resource.imageUrl" class="w-full h-40 overflow-hidden">
+      <img 
+        :src="props.resource.imageUrl" 
+        :alt="props.resource.name" 
+        class="w-full h-full object-cover object-center"
+      />
+    </div>
+
     <!-- Resource Type Badge (positioned top-right) -->
     <Badge
       :class="{
@@ -19,12 +28,20 @@
     </Badge>
 
     <CardHeader class="pb-0 space-y-2 cursor-pointer" @click="navigateToDetail">
-      <!-- Resource Title -->
-      <CardTitle
-        class="text-xl leading-tight font-bold group-hover:text-primary transition-colors line-clamp-2"
-      >
-        {{ props.resource.name }}
-      </CardTitle>
+      <!-- Resource Title with Provider Icon (if available) -->
+      <div class="flex items-center gap-2">
+        <img 
+          v-if="props.resource.providerIcon" 
+          :src="props.resource.providerIcon" 
+          :alt="'Provider icon'" 
+          class="w-5 h-5 object-contain"
+        />
+        <CardTitle
+          class="text-xl leading-tight font-bold group-hover:text-primary transition-colors line-clamp-2"
+        >
+          {{ props.resource.name }}
+        </CardTitle>
+      </div>
     </CardHeader>
 
     <!-- Resource Description -->

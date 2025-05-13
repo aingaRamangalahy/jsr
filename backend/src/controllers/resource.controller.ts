@@ -3,45 +3,98 @@ import { ResourceModel } from '../models';
 import { PricingType, ResourceStatus } from '@jsr/shared';
 
 /**
+ * Helper function to build query, apply pagination, and fetch resources
+ * @param baseQuery Base query object to start with
+ * @param req Request object containing query parameters
+ * @returns Object containing resources, pagination data, and total count
+ */
+const fetchResourcesWithPagination = async (
+  baseQuery: Record<string, any>,
+  req: Request
+) => {
+  // Extract query parameters
+  const { category, type, difficulty, pricingType, status, page = 1, limit = 50 } = req.query;
+  
+  // Copy the base query to avoid mutating the original
+  const query = { ...baseQuery };
+  
+  // Add filters if provided
+  if (category) query.category = category;
+  if (type) query.type = type;
+  
+  // Handle difficulty filter - could be string or array
+  if (difficulty) {
+    if (Array.isArray(difficulty) || (typeof difficulty === 'string' && difficulty.includes(','))) {
+      // If it's an array or comma-separated string, use $in operator
+      const difficultyValues = Array.isArray(difficulty) 
+        ? difficulty 
+        : (difficulty as string).split(',');
+      
+      query.difficulty = { $in: difficultyValues };
+    } else {
+      // Single value
+      query.difficulty = difficulty;
+    }
+  }
+  
+  // Handle pricingType filter - could be string or array
+  if (pricingType) {
+    if (Array.isArray(pricingType) || (typeof pricingType === 'string' && pricingType.includes(','))) {
+      // If it's an array or comma-separated string, use $in operator
+      const pricingValues = Array.isArray(pricingType) 
+        ? pricingType 
+        : (pricingType as string).split(',');
+        
+      query.pricingType = { $in: pricingValues };
+    } else {
+      // Single value
+      query.pricingType = pricingType;
+    }
+  }
+  
+  if (status) query.status = status;
+  
+  // Calculate pagination
+  const skip = (Number(page) - 1) * Number(limit);
+  
+  // Execute query with pagination
+  const resources = await ResourceModel.find(query)
+    .populate('category')
+    .populate('type')
+    .skip(skip)
+    .limit(Number(limit))
+    .sort({ createdAt: -1 });
+  
+  // Get total count for pagination
+  const total = await ResourceModel.countDocuments(query);
+  
+  // Build pagination data
+  const paginationData = {
+    page: Number(page),
+    limit: Number(limit),
+    total,
+    pages: Math.ceil(total / Number(limit))
+  };
+  
+  return { resources, paginationData };
+};
+
+/**
  * Get all approved resources with optional filtering
  */
 export const getResources = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { category, type, difficulty, pricingType, page = 1, limit = 10 } = req.query;
+    // Start with approved resources only for public endpoint
+    const baseQuery = { status: 'approved' };
     
-    // Build query
-    const query: Record<string, any> = { status: 'approved' };
-    
-    // Add filters if provided
-    if (category) query.category = category;
-    if (type) query.type = type;
-    if (difficulty) query.difficulty = difficulty;
-    if (pricingType) query.pricingType = pricingType;
-    
-    // Calculate pagination
-    const skip = (Number(page) - 1) * Number(limit);
-    
-    // Execute query with pagination
-    const resources = await ResourceModel.find(query)
-      .populate('category')
-      .populate('type')
-      .skip(skip)
-      .limit(Number(limit))
-      .sort({ createdAt: -1 });
-    
-    // Get total count for pagination
-    const total = await ResourceModel.countDocuments(query);
+    // Fetch resources using helper
+    const { resources, paginationData } = await fetchResourcesWithPagination(baseQuery, req);
     
     // Send response
     res.status(200).json({
       status: 'success',
       data: resources,
-      pagination: {
-        page: Number(page),
-        limit: Number(limit),
-        total,
-        pages: Math.ceil(total / Number(limit))
-      }
+      pagination: paginationData
     });
   } catch (error) {
     console.error('Error fetching resources:', error);
@@ -186,39 +239,17 @@ export const createResource = async (req: Request, res: Response): Promise<void>
  */
 export const getAllResources = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { status, page = 1, limit = 10 } = req.query;
+    // Empty base query to get all resources
+    const baseQuery = {};
     
-    // Build query
-    const query: Record<string, any> = {};
-    
-    // Add status filter if provided
-    if (status) query.status = status;
-    
-    // Calculate pagination
-    const skip = (Number(page) - 1) * Number(limit);
-    
-    // Execute query with pagination
-    const resources = await ResourceModel.find(query)
-      .populate('category')
-      .populate('type')
-      .populate('createdBy', 'name email')
-      .skip(skip)
-      .limit(Number(limit))
-      .sort({ createdAt: -1 });
-    
-    // Get total count for pagination
-    const total = await ResourceModel.countDocuments(query);
+    // Fetch resources using helper
+    const { resources, paginationData } = await fetchResourcesWithPagination(baseQuery, req);
     
     // Send response
     res.status(200).json({
       status: 'success',
       data: resources,
-      pagination: {
-        page: Number(page),
-        limit: Number(limit),
-        total,
-        pages: Math.ceil(total / Number(limit))
-      }
+      pagination: paginationData
     });
   } catch (error) {
     console.error('Error fetching all resources:', error);
@@ -296,35 +327,20 @@ export const updateResourceStatus = async (req: Request, res: Response): Promise
  */
 export const getFreeResources = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    // Base query for free resources
+    const baseQuery = { 
+      status: 'approved' as ResourceStatus, 
+      pricingType: 'free' as PricingType 
+    };
     
-    // Build query
-    const query = { status: 'approved' as ResourceStatus, pricingType: 'free' as PricingType };
-    
-    // Calculate pagination
-    const skip = (Number(page) - 1) * Number(limit);
-    
-    // Execute query with pagination
-    const resources = await ResourceModel.find(query)
-      .populate('category')
-      .populate('type')
-      .skip(skip)
-      .limit(Number(limit))
-      .sort({ createdAt: -1 });
-    
-    // Get total count for pagination
-    const total = await ResourceModel.countDocuments(query);
+    // Fetch resources using helper
+    const { resources, paginationData } = await fetchResourcesWithPagination(baseQuery, req);
     
     // Send response
     res.status(200).json({
       status: 'success',
       data: resources,
-      pagination: {
-        page: Number(page),
-        limit: Number(limit),
-        total,
-        pages: Math.ceil(total / Number(limit))
-      }
+      pagination: paginationData
     });
   } catch (error) {
     console.error('Error fetching free resources:', error);
@@ -344,35 +360,20 @@ export const getFreeResources = async (req: Request, res: Response): Promise<voi
  */
 export const getPaidResources = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    // Base query for paid resources
+    const baseQuery = { 
+      status: 'approved' as ResourceStatus, 
+      pricingType: 'paid' as PricingType 
+    };
     
-    // Build query
-    const query = { status: 'approved' as ResourceStatus, pricingType: 'paid' as PricingType };
-    
-    // Calculate pagination
-    const skip = (Number(page) - 1) * Number(limit);
-    
-    // Execute query with pagination
-    const resources = await ResourceModel.find(query)
-      .populate('category')
-      .populate('type')
-      .skip(skip)
-      .limit(Number(limit))
-      .sort({ createdAt: -1 });
-    
-    // Get total count for pagination
-    const total = await ResourceModel.countDocuments(query);
+    // Fetch resources using helper
+    const { resources, paginationData } = await fetchResourcesWithPagination(baseQuery, req);
     
     // Send response
     res.status(200).json({
       status: 'success',
       data: resources,
-      pagination: {
-        page: Number(page),
-        limit: Number(limit),
-        total,
-        pages: Math.ceil(total / Number(limit))
-      }
+      pagination: paginationData
     });
   } catch (error) {
     console.error('Error fetching paid resources:', error);
@@ -385,7 +386,7 @@ export const getPaidResources = async (req: Request, res: Response): Promise<voi
       }
     });
   }
-}; 
+};
 
 /**
  * Update resource pricing (admin only)
@@ -498,6 +499,48 @@ export const updateResource = async (req: Request, res: Response): Promise<void>
         message: 'Failed to update resource',
         code: 'RESOURCE_UPDATE_ERROR'
       } 
+    });
+  }
+};
+
+/**
+ * Get resources submitted by the current user (requires authentication)
+ */
+export const getUserSubmittedResources = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Check if user is authenticated
+    if (!req.user) {
+      res.status(401).json({
+        status: 'error',
+        error: {
+          message: 'Not authenticated',
+          code: 'NOT_AUTHENTICATED'
+        }
+      });
+      return;
+    }
+    
+    // Base query to filter by current user
+    const baseQuery = { createdBy: req.user.id };
+    
+    // Fetch resources using helper
+    const { resources, paginationData } = await fetchResourcesWithPagination(baseQuery, req);
+    
+    // Send response
+    res.status(200).json({
+      status: 'success',
+      data: resources,
+      pagination: paginationData
+    });
+  } catch (error) {
+    console.error('Error fetching user submitted resources:', error);
+    
+    res.status(500).json({
+      status: 'error',
+      error: {
+        message: 'Failed to fetch user submitted resources',
+        code: 'RESOURCE_FETCH_ERROR'
+      }
     });
   }
 };

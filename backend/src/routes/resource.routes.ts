@@ -8,7 +8,8 @@ import {
   getFreeResources,
   getPaidResources,
   updateResource,
-  updateResourcePricing
+  updateResourcePricing,
+  getUserSubmittedResources
 } from '../controllers/resource.controller';
 import { protect, restrictTo } from '../middleware/auth';
 
@@ -22,9 +23,9 @@ router.get('/:id', getResourceById);
 
 // User routes (requires authentication)
 router.post('/', protect, createResource);
+router.get('/user/submitted', protect, getUserSubmittedResources);
 
 // Admin routes (requires admin role)
-
 router.get('/admin/all', protect, restrictTo, getAllResources);
 router.put('/admin/:id', protect, restrictTo, updateResource);
 router.put('/admin/:id/status', protect, restrictTo, updateResourceStatus);

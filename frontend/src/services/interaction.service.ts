@@ -1,4 +1,3 @@
-import axios from 'axios';
 import api from './api.service';
 import { 
   Resource,
@@ -29,7 +28,7 @@ export const interactionService = {
   // Comment Methods
   async getResourceComments(resourceId: string): Promise<ApiResponse<Comment[]>> {
     try {
-      const { data } = await api.get(`/interactions/resources/${resourceId}/comments`);
+      const { data } = await api.get(`/resources/${resourceId}/comments`);
       return data;
     } catch (error) {
       console.error('Error fetching comments:', error);
@@ -39,7 +38,7 @@ export const interactionService = {
 
   async addComment(resourceId: string, comment: CommentInput): Promise<ApiResponse<Comment>> {
     try {
-      const { data } = await api.post(`/interactions/resources/${resourceId}/comments`, comment);
+      const { data } = await api.post(`/resources/${resourceId}/comments`, comment);
       return data;
     } catch (error) {
       console.error('Error adding comment:', error);
@@ -50,7 +49,7 @@ export const interactionService = {
   // Bookmark Methods
   async bookmarkResource(resourceId: string): Promise<ApiResponse<Bookmark>> {
     try {
-      const { data } = await api.post(`/interactions/resources/${resourceId}/bookmark`);
+      const { data } = await api.post(`/resources/${resourceId}/bookmark`);
       return data;
     } catch (error) {
       console.error('Error bookmarking resource:', error);
@@ -60,7 +59,7 @@ export const interactionService = {
 
   async removeBookmark(resourceId: string): Promise<ApiResponse<void>> {
     try {
-      const { data } = await api.delete(`/interactions/resources/${resourceId}/bookmark`);
+      const { data } = await api.delete(`/resources/${resourceId}/bookmark`);
       return data;
     } catch (error) {
       console.error('Error removing bookmark:', error);
@@ -70,7 +69,7 @@ export const interactionService = {
 
   async getUserBookmarks(): Promise<ApiResponse<Bookmark[]>> {
     try {
-      const { data } = await api.get('/interactions/bookmarks');
+      const { data } = await api.get('/bookmarks');
       return data;
     } catch (error) {
       console.error('Error fetching user bookmarks:', error);
@@ -81,7 +80,7 @@ export const interactionService = {
   // Vote Methods
   async voteResource(resourceId: string, vote: VoteInput): Promise<ApiResponse<Vote>> {
     try {
-      const { data } = await api.post(`/interactions/resources/${resourceId}/vote`, vote);
+      const { data } = await api.post(`/resources/${resourceId}/vote`, vote);
       return data;
     } catch (error) {
       console.error('Error voting on resource:', error);

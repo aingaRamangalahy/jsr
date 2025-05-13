@@ -47,8 +47,8 @@
         </p>
       </CardContent>
       <CardFooter>
-        <Button asChild>
-          <router-link to="/auth/login">Sign in with GitHub</router-link>
+        <Button @click="openAuthModal">
+          Sign in with GitHub
         </Button>
       </CardFooter>
     </Card>
@@ -58,4 +58,10 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { useAuth } from '@/composables/useAuth';
+
+const authState = useAuth();
+const openAuthModal = () => {
+  authState.openAuthModal();
+};
 </script> 

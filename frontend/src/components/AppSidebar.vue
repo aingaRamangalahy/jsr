@@ -10,6 +10,35 @@
     </SidebarHeader>
     
     <SidebarContent>
+            <!-- Actions Section -->
+            <SidebarGroup>
+        <SidebarGroupLabel>Actions</SidebarGroupLabel>
+        <SidebarMenu>
+          <SidebarMenuItem v-if="authStore.isAuthenticated">
+            <SidebarMenuButton
+              as-child
+              :is-active="router.currentRoute.value.path === '/dashboard'"
+            >
+              <a href="#" @click.prevent="navigateTo('/dashboard')" class="flex items-center">
+                <HomeIcon class="w-5 h-5 mr-2" />
+                <span>Dashboard</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              as-child
+              :is-active="router.currentRoute.value.path === '/submit'"
+            >
+              <a href="#" @click.prevent="navigateTo('/submit')" class="flex items-center">
+                <PlusIcon class="w-5 h-5 mr-2" />
+                <span>Submit Resource</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroup>
       <!-- Categories Section -->
       <SidebarGroup>
         <SidebarGroupLabel>Categories</SidebarGroupLabel>
@@ -32,7 +61,7 @@
                 :is-active="currentCategory === 'all'"
               >
                 <a href="#" @click.prevent="filterByCategory('all')">
-                  <ListIcon class="w-5 h-5 mr-2" />
+                  <FolderIcon class="w-5 h-5 mr-2" />
                   <span>All resources</span>
                 </a>
               </SidebarMenuButton>
@@ -59,48 +88,30 @@
         <SidebarMenu>
           <div class="px-3 py-2 space-y-4">
             <div class="flex items-center space-x-2">
-              <CheckboxRoot 
+              <Checkbox 
                 id="beginner" 
-                class="peer border-input data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-4 shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
-                v-model:checked="difficultyFilters.beginner" 
-                @update:checked="updateDifficultyFilters('beginner', $event)"
-              >
-                <CheckboxIndicator class="flex items-center justify-center text-current">
-                  <Check class="size-3.5" />
-                </CheckboxIndicator>
-              </CheckboxRoot>
+                v-model="difficultyFilters.beginner"
+              />
               <label for="beginner" class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
                 Beginner
               </label>
             </div>
             
             <div class="flex items-center space-x-2">
-              <CheckboxRoot 
+              <Checkbox 
                 id="intermediate" 
-                class="peer border-input data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-4 shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
-                v-model:checked="difficultyFilters.intermediate" 
-                @update:checked="updateDifficultyFilters('intermediate', $event)"
-              >
-                <CheckboxIndicator class="flex items-center justify-center text-current">
-                  <Check class="size-3.5" />
-                </CheckboxIndicator>
-              </CheckboxRoot>
+                v-model="difficultyFilters.intermediate"
+              />
               <label for="intermediate" class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
                 Intermediate
               </label>
             </div>
             
             <div class="flex items-center space-x-2">
-              <CheckboxRoot 
+              <Checkbox 
                 id="advanced" 
-                class="peer border-input data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-4 shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
-                v-model:checked="difficultyFilters.advanced" 
-                @update:checked="updateDifficultyFilters('advanced', $event)"
-              >
-                <CheckboxIndicator class="flex items-center justify-center text-current">
-                  <Check class="size-3.5" />
-                </CheckboxIndicator>
-              </CheckboxRoot>
+                v-model="difficultyFilters.advanced"
+              />
               <label for="advanced" class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
                 Advanced
               </label>
@@ -115,67 +126,25 @@
         <SidebarMenu>
           <div class="px-3 py-2 space-y-4">
             <div class="flex items-center space-x-2">
-              <CheckboxRoot 
+              <Checkbox 
                 id="free" 
-                class="peer border-input data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-4 shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
-                v-model:checked="pricingFilters.free" 
-                @update:checked="updatePricingFilters('free', $event)"
-              >
-                <CheckboxIndicator class="flex items-center justify-center text-current">
-                  <Check class="size-3.5" />
-                </CheckboxIndicator>
-              </CheckboxRoot>
+                v-model="pricingFilters.free"
+              />
               <label for="free" class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
                 Free
               </label>
             </div>
             
             <div class="flex items-center space-x-2">
-              <CheckboxRoot 
+              <Checkbox 
                 id="paid" 
-                class="peer border-input data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground data-[state=checked]:border-primary focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive size-4 shrink-0 rounded-[4px] border shadow-xs transition-shadow outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
-                v-model:checked="pricingFilters.paid" 
-                @update:checked="updatePricingFilters('paid', $event)"
-              >
-                <CheckboxIndicator class="flex items-center justify-center text-current">
-                  <Check class="size-3.5" />
-                </CheckboxIndicator>
-              </CheckboxRoot>
+                v-model="pricingFilters.paid"
+              />
               <label for="paid" class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
                 Paid
               </label>
             </div>
           </div>
-        </SidebarMenu>
-      </SidebarGroup>
-
-      <!-- Actions Section -->
-      <SidebarGroup>
-        <SidebarGroupLabel>Actions</SidebarGroupLabel>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              as-child
-              :is-active="router.currentRoute.value.path === '/bookmarks'"
-            >
-              <a href="#" @click.prevent="navigateTo('/bookmarks')" class="flex items-center">
-                <BookmarkIcon class="w-5 h-5 mr-2" />
-                <span>Bookmarks</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              as-child
-              :is-active="router.currentRoute.value.path === '/submit'"
-            >
-              <a href="#" @click.prevent="navigateTo('/submit')" class="flex items-center">
-                <PlusIcon class="w-5 h-5 mr-2" />
-                <span>Submit Resource</span>
-              </a>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
         </SidebarMenu>
       </SidebarGroup>
     </SidebarContent>
@@ -185,9 +154,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, reactive } from 'vue'
+import { ref, onMounted, reactive, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useResourceStore } from "@/stores/resource"
+import { useAuthStore } from "@/stores/auth.store"
 import { categoryService } from "@/services/category.service"
 import type { Category } from "@jsr/shared/types"
 import {
@@ -202,17 +172,19 @@ import {
   SidebarRail,
   type SidebarProps
 } from '@/components/ui/sidebar'
-import { CheckboxRoot, CheckboxIndicator, type CheckboxRootProps } from 'reka-ui'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Check } from 'lucide-vue-next'
 import {
   BookmarkIcon,
   PlusIcon,
   ListIcon,
   FolderIcon,
+  HomeIcon,
 } from "lucide-vue-next"
 
 const router = useRouter()
 const resourceStore = useResourceStore()
+const authStore = useAuthStore()
 
 // We use SidebarProps directly from the component library
 defineProps<SidebarProps>()
@@ -270,51 +242,29 @@ const filterByCategory = (categoryId: string) => {
   }
 }
 
-// Update difficulty filters
-const updateDifficultyFilters = (level: string, checked: boolean) => {
-  // If filter is checked, apply it, otherwise clear it
-  const difficulty = checked ? level : ''
+// Watch for difficulty filter changes
+watch(difficultyFilters, () => {
+  // Get all selected difficulty levels
+  const selectedLevels = Object.entries(difficultyFilters)
+    .filter(([_, isSelected]) => isSelected)
+    .map(([key, _]) => key)
   
-  // Only update if there's a single filter checked
-  if (checked) {
-    Object.keys(difficultyFilters).forEach(key => {
-      if (key !== level) difficultyFilters[key as keyof typeof difficultyFilters] = false
-    })
-    resourceStore.updateFilters({ difficulty })
-  } else {
-    // If no filters are checked, clear the difficulty filter
-    const anyChecked = Object.values(difficultyFilters).some(value => value)
-    if (!anyChecked) {
-      resourceStore.updateFilters({ difficulty: '' })
-    }
-  }
-}
+  // Update filters with array of selected difficulties
+  resourceStore.updateFilters({ difficulty: selectedLevels })
+}, { deep: true })
 
-// Update pricing filters
-const updatePricingFilters = (type: string, checked: boolean) => {
-  // If filter is checked, apply it, otherwise clear it
-  const pricingType = checked ? (type as '' | 'free' | 'paid') : ''
+// Watch for pricing filter changes
+watch(pricingFilters, () => {
+  // Get all selected pricing types
+  const selectedTypes = Object.entries(pricingFilters)
+    .filter(([_, isSelected]) => isSelected)
+    .map(([key, _]) => key) as ('free' | 'paid')[]
   
-  // Only update if there's a single filter checked
-  if (checked) {
-    Object.keys(pricingFilters).forEach(key => {
-      if (key !== type) pricingFilters[key as keyof typeof pricingFilters] = false
-    })
-    resourceStore.updateFilters({ pricingType })
-  } else {
-    // If no filters are checked, clear the pricing filter
-    const anyChecked = Object.values(pricingFilters).some(value => value)
-    if (!anyChecked) {
-      resourceStore.updateFilters({ pricingType: '' })
-    }
-  }
-}
+  // Update filters with array of selected pricing types
+  resourceStore.updateFilters({ pricingType: selectedTypes })
+}, { deep: true })
 
 const navigateTo = (path: string) => {
   router.push(path)
 }
 </script>
-
-<script lang="ts">
-export default {}
-</script> 

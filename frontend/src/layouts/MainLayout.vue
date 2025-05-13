@@ -8,7 +8,7 @@
           <div class="flex justify-between items-center">
             <div class="flex items-center gap-2 flex-1">
               <SidebarTrigger class="text-zinc-600 dark:text-zinc-400" />
-              <div class="relative w-full max-w-3xl ml-4">
+              <div class="relative w-full max-w-3xl mx-4">
                 <Input
                   v-model="searchQuery"
                   placeholder="Search..."
@@ -38,10 +38,36 @@
                 </Button>
               </div>
               
-              <!-- User Icon/Profile if logged in -->
-              <button v-else class="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full">
-                <UserIcon class="h-5 w-5 text-zinc-600 dark:text-zinc-400" />
-              </button>
+              <!-- User Avatar and Dropdown Menu -->
+              <DropdownMenu v-else>
+                <DropdownMenuTrigger asChild>
+                  <button class="cursor-pointer flex items-center justify-center h-8 w-8 rounded-full overflow-hidden border border-zinc-200 dark:border-zinc-700 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2">
+                    <img 
+                      v-if="userAvatar" 
+                      :src="userAvatar" 
+                      :alt="userDisplayName"
+                      class="h-full w-full object-cover"
+                    />
+                    <UserIcon 
+                      v-else 
+                      class="h-5 w-5 text-zinc-600 dark:text-zinc-400" 
+                    />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" class="w-56">
+                  <DropdownMenuLabel>
+                    <div class="flex flex-col">
+                      <span>{{ userDisplayName }}</span>
+                      <span class="text-xs text-muted-foreground truncate">{{ authStore.user?.email }}</span>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem @click="handleLogout">
+                    <LogOutIcon class="mr-2 h-4 w-4" />
+                    <span>Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>
@@ -72,22 +98,37 @@ import {
 import {
   SearchIcon,
   UserIcon,
-  GithubIcon
+  GithubIcon,
+  LogOutIcon
 } from "lucide-vue-next";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
 
 const router = useRouter();
 const resourceStore = useResourceStore();
 const authStore = useAuthStore();
 const searchQuery = ref("");
 
-
-// Get authentication status
+// Get authentication status and user info
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+const userDisplayName = computed(() => authStore.userDisplayName);
+const userAvatar = computed(() => authStore.userAvatar);
 
 const handleSearch = () => {
   resourceStore.updateFilters({ search: searchQuery.value });
   if (router.currentRoute.value.path !== "/resources") {
     router.push("/resources");
   }
+};
+
+const handleLogout = async () => {
+  await authStore.logout();
+  router.push('/');
 };
 </script> 

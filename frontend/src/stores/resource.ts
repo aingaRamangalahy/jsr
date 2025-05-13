@@ -12,8 +12,8 @@ export const useResourceStore = defineStore('resource', () => {
   const filters = ref({
     category: '',
     type: '',
-    difficulty: '',
-    pricingType: '' as 'free' | 'paid' | '',
+    difficulty: [] as string[],
+    pricingType: [] as ('free' | 'paid')[],
     search: ''
   })
 
@@ -71,10 +71,29 @@ export const useResourceStore = defineStore('resource', () => {
   // Update filters
   const updateFilters = (newFilters: Partial<typeof filters.value>) => {
     if (newFilters.category === 'all') {
-      filters.value = { ...filters.value }
+      // Clear category filter but keep others
+      filters.value.category = ''
     } else {
-      filters.value = { ...filters.value, ...newFilters }
+      // For array filters, handle them properly
+      if (newFilters.difficulty !== undefined) {
+        filters.value.difficulty = newFilters.difficulty
+      }
+      if (newFilters.pricingType !== undefined) {
+        filters.value.pricingType = newFilters.pricingType
+      }
+      
+      // For string filters
+      if (newFilters.category !== undefined) {
+        filters.value.category = newFilters.category
+      }
+      if (newFilters.type !== undefined) {
+        filters.value.type = newFilters.type
+      }
+      if (newFilters.search !== undefined) {
+        filters.value.search = newFilters.search
+      }
     }
+    
     currentPage.value = 1
     loadResources()
   }

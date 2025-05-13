@@ -1,11 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { verifyToken, UserPayload } from '../utils/jwt';
+import supabase from '../config/supabase';
+import { UserModel } from '../models';
 
 // Extend Express Request type to include user object
 declare global {
   namespace Express {
     interface Request {
       user?: UserPayload;
+      supabaseUser?: any;
     }
   }
 }
@@ -14,7 +17,7 @@ declare global {
  * Middleware to protect routes that require authentication
  * Verifies JWT token from Authorization header
  */
-export const protect = (req: Request, res: Response, next: NextFunction): void => {
+export const protect = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     // Get token from Authorization header
     const authHeader = req.headers.authorization;
@@ -33,7 +36,45 @@ export const protect = (req: Request, res: Response, next: NextFunction): void =
     // Extract token
     const token = authHeader.split(' ')[1];
     
-    // Verify token
+    // First try to verify as Supabase token
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser(token);
+      
+      if (!error && user) {
+        // This is a valid Supabase token
+        
+        // Find the corresponding user in our database
+        const dbUser = await UserModel.findOne({ supabaseId: user.id });
+        
+        if (!dbUser) {
+          res.status(404).json({
+            status: 'error',
+            error: {
+              message: 'User not found in database',
+              code: 'USER_NOT_FOUND'
+            }
+          });
+          return;
+        }
+        
+        // Add user to request
+        req.user = {
+          id: dbUser._id.toString(),
+          email: dbUser.email,
+          role: dbUser.role
+        };
+        
+        req.supabaseUser = user;
+        
+        next();
+        return;
+      }
+    } catch (err) {
+      // If there's an error, continue to try JWT verification
+      console.error('Supabase auth error:', err);
+    }
+    
+    // If not a valid Supabase token, try as our JWT token
     const decoded = verifyToken(token);
     
     if (!decoded) {
