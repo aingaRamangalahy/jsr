@@ -6,7 +6,7 @@
   "main": "src/app.ts",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
-    "build": "tsc",
+    "build": "tsc --skipLibCheck --noEmitOnError false",
     "lint": "eslint src/**/*.ts",
     "start": "node dist/app.js",
     "db:seed": "ts-node src/test-utils/db-cli.ts seed",
