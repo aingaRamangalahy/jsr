@@ -28,7 +28,11 @@ COPY . .
 # Build shared package first
 RUN cd shared && pnpm build
 
-RUN pnpm run -r build
+# Build each package with explicit directory changes to avoid filter issues
+# Using cd before each build command prevents filter flags from being passed to TypeScript
+RUN cd backend && pnpm build
+RUN cd frontend && pnpm build
+RUN cd admin && pnpm build
 
 # Create optimized production deployment packages
 RUN pnpm deploy --filter=backend --prod /prod/backend
