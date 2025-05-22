@@ -60,14 +60,28 @@ jobs:
               cp admin/nginx.conf.template admin/nginx.conf
             fi
             
-            # Build and start services with BuildKit enabled
+            # Build and start services with BuildKit enabled and resource limits
             export DOCKER_BUILDKIT=1
-            docker compose -f docker-compose.prod.yml down
-            docker compose -f docker-compose.prod.yml build --no-cache
-            docker compose -f docker-compose.prod.yml up -d
             
-            # Clean up unused Docker resources
+            # Set resource limits for Docker builds
+            export DOCKER_MEMORY_LIMIT="768m"
+            export DOCKER_CPU_LIMIT="0.8"
+            
+            echo "Stopping previous containers to free resources..."
+            docker compose -f docker-compose.prod.yml down
+            
+            # Clean up unused Docker resources before building
+            echo "Cleaning up Docker resources to free space..."
             docker system prune -af --volumes
+            
+            echo "Building containers with resource constraints..."
+            # Build containers one at a time to reduce memory pressure
+            docker compose -f docker-compose.prod.yml build --no-cache --memory=${DOCKER_MEMORY_LIMIT} backend
+            docker compose -f docker-compose.prod.yml build --no-cache --memory=${DOCKER_MEMORY_LIMIT} frontend
+            docker compose -f docker-compose.prod.yml build --no-cache --memory=${DOCKER_MEMORY_LIMIT} admin
+            
+            echo "Starting all containers..."
+            docker compose -f docker-compose.prod.yml up -d
             
             # Update Nginx configuration if needed - handle without sudo password prompts
             if [ -f nginx-host-config.conf ]; then

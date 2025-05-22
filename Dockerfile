@@ -6,6 +6,12 @@ RUN corepack enable
 FROM base AS build
 WORKDIR /app
 
+# Set memory limits for Node.js
+ENV NODE_OPTIONS="--max-old-space-size=512"
+# Reduce parallel operations for pnpm
+ENV PNPM_NETWORK_CONCURRENCY=1
+ENV PNPM_NETWORK_TIMEOUT=100000
+
 # Copy package.json files first to optimize layer caching
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY shared/package.json ./shared/
@@ -13,23 +19,24 @@ COPY backend/package.json ./backend/
 COPY frontend/package.json ./frontend/
 COPY admin/package.json ./admin/
 
-# Fetch dependencies to leverage Docker layer caching
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm fetch
+# Fetch dependencies to leverage Docker layer caching - with lower concurrency
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm fetch --network-concurrency=1
 
-# Install dependencies only (without source code) - this allows Docker to cache this layer
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+# Install dependencies only (without source code) - with lower concurrency
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --network-concurrency=1
 
 # Copy all source code
 COPY . .
 
-# Build shared package first
+# Build shared package first - with reduced memory usage
 RUN cd shared && pnpm build
 
-# Build all remaining packages
-RUN pnpm run -r --filter=!shared build
+# Build all remaining packages - serially to reduce memory pressure
+RUN pnpm run build --filter=backend
+RUN pnpm run build --filter=frontend
+RUN pnpm run build --filter=admin
 
-# Deploy only production dependencies for each service
-# Include shared package in each deployment
+# Deploy only production dependencies for each service - sequentially
 RUN pnpm deploy --filter=backend --prod /prod/backend
 RUN pnpm deploy --filter=frontend --prod /prod/frontend
 RUN pnpm deploy --filter=admin --prod /prod/admin
