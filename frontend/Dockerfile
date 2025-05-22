@@ -10,16 +10,14 @@ COPY package.json ./
 COPY tsconfig.json ./
 COPY vite.config.ts ./
 
-# Copy shared package (required for workspace dependency)
-COPY ../shared /app/shared
-
-# Install dependencies with pnpm
-RUN pnpm install
+# The shared directory will be mounted as a volume at runtime
+# Don't try to copy it during build
 
 # Copy source code
 COPY . .
 
 # Build the application
+RUN pnpm install
 RUN pnpm run build
 
 # Production stage with Nginx to serve static files

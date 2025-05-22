@@ -54,8 +54,12 @@ jobs:
               sed -i "s|NODE_ENV=.*|NODE_ENV=production|g" .env
             fi
             
-            # Make sure the update-nginx-config script is executable
-            chmod +x scripts/update-nginx-config.sh
+            # Make sure the scripts are executable
+            chmod +x scripts/*.sh
+            
+            # Run the setup script to ensure shared directory exists
+            echo "Setting up monorepo structure..."
+            ./scripts/setup-monorepo.sh
             
             # Build and start services
             docker compose -f docker-compose.prod.yml down
