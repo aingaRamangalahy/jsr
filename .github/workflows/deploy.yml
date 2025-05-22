@@ -76,9 +76,21 @@ jobs:
             
             echo "Building containers with resource constraints..."
             # Build containers one at a time to reduce memory pressure
-            docker compose -f docker-compose.prod.yml build --no-cache --memory=${DOCKER_MEMORY_LIMIT} backend
-            docker compose -f docker-compose.prod.yml build --no-cache --memory=${DOCKER_MEMORY_LIMIT} frontend
-            docker compose -f docker-compose.prod.yml build --no-cache --memory=${DOCKER_MEMORY_LIMIT} admin
+            # Pass --build-arg to set environment variables in the Dockerfile
+            docker compose -f docker-compose.prod.yml build --no-cache --memory=${DOCKER_MEMORY_LIMIT} \
+              --build-arg NODE_OPTIONS="--max-old-space-size=512" \
+              --build-arg PNPM_NETWORK_CONCURRENCY=1 \
+              backend
+              
+            docker compose -f docker-compose.prod.yml build --no-cache --memory=${DOCKER_MEMORY_LIMIT} \
+              --build-arg NODE_OPTIONS="--max-old-space-size=512" \
+              --build-arg PNPM_NETWORK_CONCURRENCY=1 \
+              frontend
+              
+            docker compose -f docker-compose.prod.yml build --no-cache --memory=${DOCKER_MEMORY_LIMIT} \
+              --build-arg NODE_OPTIONS="--max-old-space-size=512" \
+              --build-arg PNPM_NETWORK_CONCURRENCY=1 \
+              admin
             
             echo "Starting all containers..."
             docker compose -f docker-compose.prod.yml up -d
@@ -101,7 +113,8 @@ jobs:
               echo 'fi' >> update_nginx.sh
               echo '' >> update_nginx.sh
               echo 'if ! certbot certificates | grep -q "admin.jsresources.dev"; then' >> update_nginx.sh
-              echo '  certbot --nginx -d jsresources.dev -d api.jsresources.dev -d admin.jsresources.dev --non-interactive --agree-tos' >> update_nginx.sh
+              echo '  # Use --expand flag to add new domains to existing certificate' >> update_nginx.sh
+              echo '  certbot --nginx --expand --non-interactive --agree-tos -d jsresources.dev -d api.jsresources.dev -d admin.jsresources.dev' >> update_nginx.sh
               echo 'fi' >> update_nginx.sh
               echo '' >> update_nginx.sh
               echo 'systemctl reload nginx' >> update_nginx.sh

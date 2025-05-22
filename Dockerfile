@@ -31,10 +31,10 @@ COPY . .
 # Build shared package first - with reduced memory usage
 RUN cd shared && pnpm build
 
-# Build all remaining packages - serially to reduce memory pressure
-RUN pnpm run build --filter=backend
-RUN pnpm run build --filter=frontend
-RUN pnpm run build --filter=admin
+# Build remaining packages individually to avoid passing filter flags to tsc
+RUN cd backend && pnpm build
+RUN cd frontend && pnpm build
+RUN cd admin && pnpm build
 
 # Deploy only production dependencies for each service - sequentially
 RUN pnpm deploy --filter=backend --prod /prod/backend
