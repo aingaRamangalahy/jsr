@@ -34,30 +34,6 @@ jobs:
             grep -q "cd admin && pnpm build || echo \"Ignoring TypeScript errors in admin\"" Dockerfile || echo "WARNING: Dockerfile does not contain expected admin build commands!"
             grep -q "pnpm install$" Dockerfile || echo "WARNING: Dockerfile is using frozen lockfile, which may cause issues with workspace config!"
             
-            # Make sure .env file exists for Docker Compose to use
-            if [ ! -f .env ]; then
-              echo "Creating .env file from template"
-              cp env.example .env
-              
-              # Set required environment variables
-              sed -i "s|MONGODB_ATLAS_URI=.*|MONGODB_ATLAS_URI=${{ secrets.MONGODB_ATLAS_URI }}|g" .env
-              sed -i "s|JWT_SECRET=.*|JWT_SECRET=${{ secrets.JWT_SECRET }}|g" .env
-              sed -i "s|SUPABASE_URL=.*|SUPABASE_URL=${{ secrets.SUPABASE_URL }}|g" .env
-              sed -i "s|SUPABASE_ANON_KEY=.*|SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}|g" .env
-              sed -i "s|SUPABASE_SERVICE_ROLE_KEY=.*|SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}|g" .env
-              sed -i "s|API_URL=.*|API_URL=https://api.jsresources.dev|g" .env
-              sed -i "s|DOMAIN_NAME=.*|DOMAIN_NAME=jsresources.dev|g" .env
-              sed -i "s|ADMIN_EMAIL=.*|ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}|g" .env
-              sed -i "s|NODE_ENV=.*|NODE_ENV=production|g" .env
-            else
-              # Update the .env file with the latest production values
-              sed -i "s|MONGODB_ATLAS_URI=.*|MONGODB_ATLAS_URI=${{ secrets.MONGODB_ATLAS_URI }}|g" .env
-              sed -i "s|JWT_SECRET=.*|JWT_SECRET=${{ secrets.JWT_SECRET }}|g" .env
-              sed -i "s|SUPABASE_URL=.*|SUPABASE_URL=${{ secrets.SUPABASE_URL }}|g" .env
-              sed -i "s|SUPABASE_ANON_KEY=.*|SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}|g" .env
-              sed -i "s|SUPABASE_SERVICE_ROLE_KEY=.*|SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}|g" .env
-              sed -i "s|NODE_ENV=.*|NODE_ENV=production|g" .env
-            fi
             
             # Create Nginx config files if they don't exist
             if [ ! -f "frontend/nginx.conf" ] && [ -f "frontend/nginx.conf.template" ]; then
