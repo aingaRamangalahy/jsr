@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "pnpm -r run dev",
-    "build": "pnpm -r run build",
+    "build": "pnpm --filter=shared build && pnpm --filter=backend build && pnpm --filter=frontend build && pnpm --filter=admin build",
     "lint": "pnpm -r run lint"
   },
   "keywords": [

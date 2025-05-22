@@ -23,9 +23,14 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
             cd apps/jsr
             
-            # Update code
-            git pull origin master
-
+            # Force clean git update
+            git fetch origin
+            git reset --hard origin/master
+            
+            echo "Ensuring we have the latest code..."
+            # Verify Dockerfile has the correct content
+            grep -q "cd backend && pnpm build" Dockerfile || echo "WARNING: Dockerfile does not contain expected build commands!"
+            
             # Make sure .env file exists for Docker Compose to use
             if [ ! -f .env ]; then
               echo "Creating .env file from template"
@@ -64,22 +69,20 @@ jobs:
             echo "Stopping previous containers to free resources..."
             docker compose -f docker-compose.prod.yml down
             
-            # Clean up unused Docker resources
-            echo "Cleaning up Docker resources to free space..."
+            # Aggressive cleanup of Docker cache and resources
+            echo "Aggressive cleaning of Docker resources..."
             docker system prune -af --volumes
+            docker builder prune -f
+            docker image prune -af
             
             # Enable BuildKit for more efficient builds
             echo "Setting up Docker BuildKit..."
             export DOCKER_BUILDKIT=1
-            
-            # Define memory constraints for Docker build
-            echo "Building containers with resource constraints..."
             export DOCKER_DEFAULT_PLATFORM=linux/amd64
             
-            # Build the full stack at once with optimized settings
-            docker compose -f docker-compose.prod.yml build \
-              --build-arg BUILDKIT_INLINE_CACHE=1 \
-              --progress=plain
+            # Build the full stack with forced rebuild, no cache
+            echo "Building containers with clean forced rebuild..."
+            docker compose -f docker-compose.prod.yml build --no-cache --progress=plain
             
             echo "Starting all containers..."
             docker compose -f docker-compose.prod.yml up -d
