@@ -1,26 +1,24 @@
 {
-    "name": "jsr",
-    "version": "1.0.0",
-    "description": "JavaScript Resources Project",
-    "workspaces": [
-      "frontend",
-      "backend",
-      "common"
-    ],
-    "scripts": {
-      "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
-      "start:frontend": "cd frontend && npm run dev",
-      "start:backend": "cd backend && npm run dev",
-      "build": "npm run build:common && npm run build:backend && npm run build:frontend",
-      "build:common": "cd common && npm run build",
-      "build:backend": "cd backend && npm run build",
-      "build:frontend": "cd frontend && npm run build",
-      "install:all": "npm install && npm run build:common",
-      "format": "npm run format:frontend && npm run format:backend",
-      "format:frontend": "cd frontend && npm run format",
-      "format:backend": "cd backend && npm run format"
-    },
-    "devDependencies": {
-      "concurrently": "^8.2.2"
-    }
-  }
+  "name": "jsr",
+  "version": "0.1.0",
+  "description": "JavaScript Resources - A platform for curated JavaScript learning resources",
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "scripts": {
+    "dev": "pnpm -r run dev",
+    "build": "pnpm -r run build",
+    "lint": "pnpm -r run lint"
+  },
+  "keywords": [
+    "javascript",
+    "resources",
+    "learning",
+    "education"
+  ],
+  "author": "JSR Team",
+  "license": "MIT",
+  "packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39"
+}

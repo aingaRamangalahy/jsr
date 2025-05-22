@@ -1,46 +1,109 @@
+version: '3.8'
+
 services:
-  frontend:
-    build: 
-      context: .
-      dockerfile: frontend/Dockerfile
-    ports:
-      - "3001:80"
+  # MongoDB database
+  mongodb:
+    image: mongo:7
+    container_name: jsr-mongodb
     restart: always
-    depends_on:
-      - backend
     environment:
-      - VITE_API_URL=${VITE_API_URL}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME:-jsr_user}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD:-jsr_password}
+      - MONGO_INITDB_DATABASE=${MONGO_DATABASE:-jsr}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
     networks:
       - jsr-network
 
+  # Backend API
   backend:
-    build: 
-      context: .
-      dockerfile: backend/Dockerfile
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: jsr-backend
+    restart: always
+    depends_on:
+      - mongodb
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - MONGODB_URI=mongodb://${MONGO_USERNAME:-jsr_user}:${MONGO_PASSWORD:-jsr_password}@mongodb:27017/${MONGO_DATABASE:-jsr}?authSource=admin
+      - JWT_SECRET=${JWT_SECRET:-your_jwt_secret}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
     ports:
       - "3000:3000"
-    restart: always
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - PORT=${PORT}
-      - MONGODB_URI=${MONGODB_URI}
-      - CORS_ORIGIN=${CORS_ORIGIN}
-      - RATE_LIMIT_WINDOW_MS=${RATE_LIMIT_WINDOW_MS}
-      - RATE_LIMIT_MAX=${RATE_LIMIT_MAX}
     volumes:
-      - backend_logs:/app/logs
+      - ./backend:/app
+      - ./shared:/app/shared
+      - /app/node_modules
     networks:
       - jsr-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
+    command: pnpm run dev
+
+  # Frontend client
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: jsr-frontend
+    restart: always
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:3000/api/v1
+      - VITE_SUPABASE_URL=${SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./frontend:/app
+      - ./shared:/app/shared
+      - /app/node_modules
+    networks:
+      - jsr-network
+    command: pnpm run dev
+
+  # Admin dashboard
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    container_name: jsr-admin
+    restart: always
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:3000/api/v1
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./admin:/app
+      - ./shared:/app/shared
+      - /app/node_modules
+    networks:
+      - jsr-network
+    command: pnpm run dev
+
+  # Nginx reverse proxy
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: jsr-nginx
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+      - frontend
+      - admin
+    networks:
+      - jsr-network
 
 networks:
   jsr-network:
     driver: bridge
 
 volumes:
-  backend_logs:
+  mongodb_data: 

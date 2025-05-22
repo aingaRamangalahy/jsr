@@ -1,202 +1,182 @@
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import { resourceService } from '@/services/api/resource.service';
-import type { Resource, ResourceCreateDTO } from '@jsr/common';
+import { defineStore } from 'pinia'
+import { ref, computed, watch } from 'vue'
+import type { Resource } from '@jsr/shared/types'
+import { resourceService, ResourceWithInteractions } from '@/services/resource.service'
+import { useInteractionsStore } from './interactions.store'
+import { interactionService } from '@/services/interaction.service'
 
-export interface FilterState {
-  sortBy: string;
-  type: string;
-  skillLevel: string;
-  frameworks: string[];
-  category: string;
-  search: string;
-}
-
-export const useResourceStore = defineStore('resources', () => {
-  const resources = ref<Resource[]>([]);
-  const isLoading = ref(false);
-  const error = ref<string | null>(null);
-
-  const filters = ref<FilterState>({
-    sortBy: 'newest',
-    type: 'all',
-    skillLevel: 'all',
-    frameworks: [],
-    category: 'all',
-    search: '',
-  });
+export const useResourceStore = defineStore('resource', () => {
+  const resources = ref<ResourceWithInteractions[]>([])
+  const loading = ref(false)
+  const error = ref<string | null>(null)
+  const currentPage = ref(1)
+  const totalPages = ref(1)
+  const filters = ref({
+    category: '',
+    type: '',
+    difficulty: [] as string[],
+    pricingType: [] as ('free' | 'paid')[],
+    search: ''
+  })
+  
+  // Get the interactions store for syncing
+  const interactionsStore = useInteractionsStore()
 
   // Computed property for filtered resources
-  const filteredResources = computed(() => {
-    let result = Array.isArray(resources.value) ? [...resources.value] : [];
+  const filteredResources = computed(() => resources.value)
 
-    if (filters.value.search.trim()) {
-      const searchLower = filters.value.search.toLowerCase();
-      result = result.filter(
-        (resource) =>
-          resource.title.toLowerCase().includes(searchLower) ||
-          resource.description.toLowerCase().includes(searchLower) ||
-          resource.tags.some((tag: string) => tag.toLowerCase().includes(searchLower)),
-      );
+  // Sync embedded interactions to the interactions store
+  const syncInteractionsToStore = (resourcesList: ResourceWithInteractions[]) => {
+    // Check if any resources have embedded interactions
+    const resourcesWithInteractions = resourcesList.filter(
+      resource => resource.id && resource.userInteractions !== undefined
+    );
+    
+    if (resourcesWithInteractions.length > 0) {
+      // Extract interactions using the utility method
+      const interactionsMap = interactionService.extractInteractionsFromResources(resourcesWithInteractions);
+      
+      // Update the interactions store with the extracted data
+      interactionsStore.updateInteractionsMap(interactionsMap);
     }
+  }
 
-    // Category filter
-    if (filters.value.category !== 'all') {
-      switch (filters.value.category) {
-        case 'blog':
-          result = result.filter((r) => r.type === 'website' || r.type === 'book');
-          break;
-        case 'youtube':
-          result = result.filter((r) => r.type === 'youtube');
-          break;
-        case 'twitter':
-          result = result.filter((r) => r.type === 'twitter');
-          break;
-        // Add more categories as needed
+  // Load resources with current filters
+  const loadResources = async () => {
+    try {
+      loading.value = true
+      error.value = null
+      const response = await resourceService.getResources(filters.value, currentPage.value)
+      resources.value = response.data
+      
+      // Sync interactions to the store if they exist in the response
+      syncInteractionsToStore(resources.value)
+      
+      totalPages.value = response.pagination.pages
+    } catch (err) {
+      error.value = 'Failed to load resources'
+      console.error('Error loading resources:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Load free resources
+  const loadFreeResources = async () => {
+    try {
+      loading.value = true
+      error.value = null
+      const response = await resourceService.getFreeResources(currentPage.value)
+      resources.value = response.data
+      
+      // Sync interactions to the store if they exist in the response
+      syncInteractionsToStore(resources.value)
+      
+      totalPages.value = response.pagination.pages
+    } catch (err) {
+      error.value = 'Failed to load free resources'
+      console.error('Error loading free resources:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Load paid resources
+  const loadPaidResources = async () => {
+    try {
+      loading.value = true
+      error.value = null
+      const response = await resourceService.getPaidResources(currentPage.value)
+      resources.value = response.data
+      
+      // Sync interactions to the store if they exist in the response
+      syncInteractionsToStore(resources.value)
+      
+      totalPages.value = response.pagination.pages
+    } catch (err) {
+      error.value = 'Failed to load paid resources'
+      console.error('Error loading paid resources:', err)
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Update filters
+  const updateFilters = (newFilters: Partial<typeof filters.value>) => {
+    if (newFilters.category === 'all') {
+      // Clear category filter but keep others
+      filters.value.category = ''
+    } else {
+      // For array filters, handle them properly
+      if (newFilters.difficulty !== undefined) {
+        filters.value.difficulty = newFilters.difficulty
+      }
+      if (newFilters.pricingType !== undefined) {
+        filters.value.pricingType = newFilters.pricingType
+      }
+      
+      // For string filters
+      if (newFilters.category !== undefined) {
+        filters.value.category = newFilters.category
+      }
+      if (newFilters.type !== undefined) {
+        filters.value.type = newFilters.type
+      }
+      if (newFilters.search !== undefined) {
+        filters.value.search = newFilters.search
       }
     }
+    
+    currentPage.value = 1
+    loadResources()
+  }
 
-    // Type filter
-    if (filters.value.type !== 'all') {
-      result = result.filter((r) => r.type === filters.value.type);
-    }
+  // Change page
+  const changePage = (page: number) => {
+    currentPage.value = page
+    loadResources()
+  }
 
-    // Skill level filter
-    if (filters.value.skillLevel !== 'all') {
-      result = result.filter((r) => r.skillLevel === filters.value.skillLevel);
-    }
-
-    // Framework filters
-    if (filters.value.frameworks.length > 0) {
-      result = result.filter((resource) =>
-        filters.value.frameworks.some((framework) => resource.tags.includes(framework)),
-      );
-    }
-
-    // Sorting
-    switch (filters.value.sortBy) {
-      case 'oldest':
-        result.sort((a, b) => new Date(a.dateAdded as string).getTime() - new Date(b.dateAdded as string).getTime());
-        break;
-      case 'popular':
-        result.sort((a, b) => (b.votes as number) - (a.votes as number));
-        break;
-      case 'rating':
-        result.sort((a, b) => (b.rating as number) - (a.rating as number));
-        break;
-      case 'newest':
-      default:
-        result.sort((a, b) => new Date(b.dateAdded as string).getTime() - new Date(a.dateAdded as string).getTime());
-        break;
-    }
-
-    return result;
-  });
-
-  async function fetchResources() {
-    if (isLoading.value) return;
-    isLoading.value = true;
-    error.value = null;
+  // Get a resource by ID with interactions
+  const getResourceById = async (id: string): Promise<ResourceWithInteractions | null> => {
     try {
-      const response = await resourceService.getResources();
-      resources.value = response.data;
+      loading.value = true
+      error.value = null
+      const response = await resourceService.getResourceById(id)
+      
+      if (response.status === 'success' && response.data) {
+        // Sync interaction data if available
+        if (response.data.userInteractions) {
+          // Use the extract method to update interactions store
+          const resourceWithInteractions = [response.data];
+          syncInteractionsToStore(resourceWithInteractions);
+        }
+        
+        return response.data
+      }
+      return null
     } catch (err) {
-      console.error('Error fetching resources:', err);
-      error.value = 'Failed to fetch resources. Please try again later.';
+      error.value = 'Failed to load resource'
+      console.error('Error loading resource:', err)
+      return null
     } finally {
-      isLoading.value = false;
+      loading.value = false
     }
-  }
-
-  // Update filter functions
-  function updateFilter<K extends keyof FilterState>(key: K, value: FilterState[K]) {
-    if (value === 'all') {
-      clearFilters();
-    } else {
-      filters.value[key] = value;
-    }
-  }
-
-  function updateFrameworkFilters(frameworks: string[]) {
-    filters.value.frameworks = frameworks;
-  }
-
-  function toggleFramework(frameworkId: string) {
-    const index = filters.value.frameworks.indexOf(frameworkId);
-    if (index === -1) {
-      filters.value.frameworks.push(frameworkId);
-    } else {
-      filters.value.frameworks.splice(index, 1);
-    }
-  }
-
-  function clearFilters() {
-    filters.value = {
-      sortBy: 'newest',
-      type: 'all',
-      skillLevel: 'all',
-      frameworks: [],
-      category: 'all',
-      search: '',
-    };
-  }
-
-  function setSearchQuery(query: string) {
-    filters.value.search = query;
-  }
-
-  // Resource management
-  async function addResource(resourceData: ResourceCreateDTO) {
-    isLoading.value = true;
-    error.value = null;
-
-    try {
-      const response = await resourceService.createResource(resourceData);
-      resources.value?.unshift(response.data);
-      return response.data;
-    } catch (err) {
-      error.value = 'Failed to add resource';
-      console.error(err);
-      throw err;
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  async function getResourceById(id: string) {
-    isLoading.value = true;
-    error.value = null;
-
-    try {
-      const response = await resourceService.getResourceById(id);
-      return response.data;
-    } catch (err) {
-      error.value = 'Failed to get resource';
-      console.error(err);
-      throw err;
-    } finally {
-      isLoading.value = false;
-    }
-  }
-
-  function init() {
-    fetchResources();
   }
 
   return {
     resources,
+    loading,
+    error,
+    currentPage,
+    totalPages,
     filters,
     filteredResources,
-    isLoading,
-    error,
-    init,
-    fetchResources,
-    updateFilter,
-    updateFrameworkFilters,
-    toggleFramework,
-    clearFilters,
-    setSearchQuery,
-    addResource,
-    getResourceById,
-  };
-});
+    loadResources,
+    loadFreeResources,
+    loadPaidResources,
+    updateFilters,
+    changePage,
+    getResourceById
+  }
+}) 

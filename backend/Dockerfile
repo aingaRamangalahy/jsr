@@ -1,65 +1,51 @@
-FROM node:18-alpine AS build
-
-# Install curl for healthcheck
-RUN apk --no-cache add curl
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy root package.json and workspace files
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files for dependency installation
 COPY package.json ./
-COPY common ./common/
-COPY backend/package.json ./backend/
-COPY backend/tsconfig.json ./backend/
+COPY tsconfig.json ./
+COPY tsconfig.node.json ./
 
-# Install dependencies using workspace feature
-RUN npm install
+# Copy shared package (required for workspace dependency)
+COPY ../shared /app/shared
 
-# Build the common package first
-WORKDIR /app/common
-RUN npm run build
+# Install dependencies with pnpm
+RUN pnpm install
 
-# Copy backend code
-WORKDIR /app
-COPY backend ./backend/
+# Copy source code
+COPY . .
 
 # Build the application
-WORKDIR /app/backend
-RUN npm run build
-
-# Check the build output - this helps debugging
-# RUN find /app -name "*.js" | sort
+RUN pnpm run build
 
 # Production stage
-FROM node:18-alpine
-
-# Install curl for healthcheck
-RUN apk --no-cache add curl
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files and workspace configuration
+# Install pnpm
+RUN npm install -g pnpm
+
+# Copy package files
 COPY package.json ./
-COPY backend/package.json ./backend/
-COPY common/package.json ./common/
 
-# Create common/dist directory first
-RUN mkdir -p common/dist
+# Copy the built application from builder stage
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/shared ./shared
 
-# Copy built common files from build stage
-COPY --from=build /app/common/dist ./common/dist/
+# Install only production dependencies
+RUN pnpm install --prod
 
-# Install production dependencies only
-WORKDIR /app/backend
-RUN npm install --only=production --no-fund --no-audit
+# Environment variables
+ENV NODE_ENV=production
+ENV PORT=3000
 
-# Copy built application from build stage
-COPY --from=build /app/backend/dist ./dist
-
-# Create logs directory
-RUN mkdir -p logs
-
-# Expose the port the app runs on
+# Expose API port
 EXPOSE 3000
 
-# Start the application
-CMD ["node", "dist/index.js"]
+# Start the server
+CMD ["node", "dist/app.js"] 

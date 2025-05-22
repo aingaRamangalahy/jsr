@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "baseUrl": ".",
+    "composite": true,
+    "paths": {
+      "@jsr/shared": ["shared/index.ts"],
+      "@jsr/shared/*": ["shared/*"],
+      "@backend/*": ["backend/src/*"],
+      "@frontend/*": ["frontend/src/*"],
+      "@admin/*": ["admin/src/*"]
+    }
+  }
+} 

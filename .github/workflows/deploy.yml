@@ -30,12 +30,23 @@ jobs:
             if [ ! -f .env ]; then
               echo "Creating .env file from template"
               cp .env.production .env
+            else
+              # Update the .env file with the latest production values
+              echo "Updating existing .env file with production values"
+              # Ensure Atlas MongoDB URI is set correctly
+              grep -q "MONGODB_ATLAS_URI" .env || echo "MONGODB_ATLAS_URI=${{ secrets.MONGODB_ATLAS_URI }}" >> .env
+              # Update the value if it already exists
+              sed -i "s|^MONGODB_ATLAS_URI=.*|MONGODB_ATLAS_URI=${{ secrets.MONGODB_ATLAS_URI }}|g" .env
             fi
             
             # Build and start services
             docker compose down
             docker compose build --no-cache
-            docker compose --env-file .env.production  up -d
+            docker compose --env-file .env up -d
+            
+            # Clean up unused Docker resources
+            docker system prune -af --volumes
+            
             # Final disk space check
             echo "Final disk space:"
             df -h /

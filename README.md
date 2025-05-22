@@ -1,81 +1,125 @@
-# JS Resources
+# JSResources (JSR)
 
-A platform to discover, share, and recommend JavaScript learning resources for developers of all skill levels.
+A comprehensive platform for curating and discovering JavaScript resources.
 
-![image](https://github.com/user-attachments/assets/b89befb0-f562-4e4a-bb12-26cd2396a31f)
+## Deployment Guide
 
+### MongoDB Atlas Setup (For Production)
 
-## 🌟 Features
+1. Create a MongoDB Atlas account at [https://www.mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
 
-- **Resource Discovery**: Browse a curated collection of JavaScript learning materials including websites, books, YouTube channels, and more
-- **Filtering System**: Find exactly what you need with multiple filtering options
-- **Framework Filters**: Quickly find resources related to specific frameworks (React, Vue, Angular, etc.)
-- **Responsive Design**: Works great on both desktop and mobile devices
+2. Create a new cluster (the free tier is sufficient to start)
 
-# comming soon
-- **Login via github account**: give users more access by login via github account
-- **Add Resources**: Contribute by adding your favorite JavaScript learning materials
+3. Set up a database user with read/write permissions
 
-## 🛠️ Tech Stack
+4. Configure network access (IP whitelist):
+   - For development: Add your current IP address
+   - For production: Add your VPS/server IP address or use 0.0.0.0/0 for public access (less secure)
 
-### Frontend
-- Vue 3 with Composition API
-- TypeScript
-- Tailwind CSS
-- PrimeVue (UI components)
-- Pinia (State management)
-- Vite (Build system)
+5. Get your connection string by clicking "Connect" > "Connect your application"
+   - Replace `<username>`, `<password>`, and `<database>` with your actual values
+   - This will be used as the `MONGODB_ATLAS_URI` environment variable
 
-### Backend
-- Node.js
-- Express
-- TypeScript
-- Docker for containerization
+### Local Development with Docker
 
-## 🚀 Getting Started
+1. Clone the repository and navigate to the project directory:
+   ```bash
+   git clone https://github.com/yourusername/jsr.git
+   cd jsr
+   ```
 
-### Prerequisites
-- Node.js 18 or higher
-- Docker and Docker Compose (for containerized deployment)
+2. Create a `.env` file based on the provided example:
+   ```bash
+   cp env.example .env
+   ```
 
-### Local Development
+3. Update the environment variables in the `.env` file with your own values.
+   - For local development, you can use the built-in MongoDB container
+   - For testing with Atlas, configure the `MONGODB_ATLAS_URI` variable
 
-#### Frontend
+4. Start the development environment using Docker Compose:
+   ```bash
+   docker-compose up -d
+   ```
+
+5. Access the application:
+   - Frontend: http://localhost:80
+   - Admin Dashboard: http://localhost:80/admin
+   - API: http://localhost:80/api
+   - API Documentation: http://localhost:80/api-docs
+
+### Production Deployment on DigitalOcean
+
+1. Create a DigitalOcean Droplet with Ubuntu 22.04.
+
+2. SSH into your Droplet:
+   ```bash
+   ssh root@your_server_ip
+   ```
+
+3. Clone the repository and navigate to the project directory:
+   ```bash
+   git clone https://github.com/yourusername/jsr.git
+   cd jsr
+   ```
+
+4. Update the environment variables:
+   ```bash
+   cp env.example .env
+   nano .env
+   ```
+   
+   Make sure to configure your MongoDB Atlas URI correctly:
+   ```
+   MONGODB_ATLAS_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>?retryWrites=true&w=majority
+   ```
+
+5. Make the deployment script executable:
+   ```bash
+   chmod +x scripts/deploy-digitalocean.sh
+   ```
+
+6. Run the deployment script:
+   ```bash
+   ./scripts/deploy-digitalocean.sh
+   ```
+
+7. The script will:
+   - Install Docker and Docker Compose if needed
+   - Configure Nginx for SSL
+   - Set up Let's Encrypt SSL certificates
+   - Start all services in production mode
+
+8. Access your production application at https://yourdomain.com
+
+### GitHub Actions Deployment
+
+The repository includes a GitHub Actions workflow that automatically deploys the application to your VPS when code is pushed to the master branch.
+
+To use this workflow:
+
+1. Add the following secrets to your GitHub repository:
+   - `VPS_SSH_KEY`: Your private SSH key for accessing the server
+   - `VPS_USER`: The username for SSH access (e.g., root)
+   - `VPS_HOST`: The IP address or hostname of your VPS
+   - `MONGODB_ATLAS_URI`: Your MongoDB Atlas connection string
+
+2. Ensure your server is set up to accept the SSH key used in the GitHub Actions workflow.
+
+3. Push to the master branch to trigger the deployment.
+
+### SSL Certificate Renewal
+
+The deployment script adds a reminder to set up a cron job for automatic SSL certificate renewal. To create this cron job, run:
+
 ```bash
-cd frontend
-npm install
-npm run dev
+crontab -e
 ```
 
-#### Backend
-```bash
-cd backend
-npm install
-npm run dev
+Then add the following line:
+
+```
+0 0 1 * * cd /path/to/jsr && docker-compose -f docker-compose.prod.yml run --rm certbot renew && docker-compose -f docker-compose.prod.yml exec nginx nginx -s reload
 ```
 
-### Docker Deployment
-
-The project includes Docker configuration for easy deployment:
-```bash
-#Build and start both frontend and backend
-docker compose up -d
-
-#Stop services
-docker compose down
-```
-
-### 🔧 Configuration
-The application uses the following ports:
-- Frontend: Port 80
-- Backend API: Port 3000
-
-### 📄 License
-This project is licensed under the ISC License
-
-### 🙏 Acknowledgements
-Vue.js
-Tailwind CSS
-PrimeVue
-Express
-daily.dev (inspiration)
+This will renew your SSL certificates on the first day of each month. 
