@@ -20,7 +20,7 @@ jobs:
 
       - name: Deploy to VPS
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'ENDSSH'
             cd apps/jsr
             
             # Update code
@@ -43,10 +43,7 @@ jobs:
               sed -i "s|NODE_ENV=.*|NODE_ENV=production|g" .env
             else
               # Update the .env file with the latest production values
-              echo "Updating existing .env file with production values"
-              # Update MongoDB Atlas URI
               sed -i "s|MONGODB_ATLAS_URI=.*|MONGODB_ATLAS_URI=${{ secrets.MONGODB_ATLAS_URI }}|g" .env
-              # Update other sensitive environment variables
               sed -i "s|JWT_SECRET=.*|JWT_SECRET=${{ secrets.JWT_SECRET }}|g" .env
               sed -i "s|SUPABASE_URL=.*|SUPABASE_URL=${{ secrets.SUPABASE_URL }}|g" .env
               sed -i "s|SUPABASE_ANON_KEY=.*|SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}|g" .env
@@ -54,18 +51,17 @@ jobs:
               sed -i "s|NODE_ENV=.*|NODE_ENV=production|g" .env
             fi
             
-            # Make sure the scripts are executable
-            chmod +x scripts/*.sh
+            # Create Nginx config files if they don't exist
+            if [ ! -f "frontend/nginx.conf" ] && [ -f "frontend/nginx.conf.template" ]; then
+              cp frontend/nginx.conf.template frontend/nginx.conf
+            fi
+
+            if [ ! -f "admin/nginx.conf" ] && [ -f "admin/nginx.conf.template" ]; then
+              cp admin/nginx.conf.template admin/nginx.conf
+            fi
             
-            # Run the setup script to ensure shared directory exists
-            echo "Setting up monorepo structure..."
-            ./scripts/setup-monorepo.sh
-            
-            # Run the check files script to ensure required files exist
-            echo "Checking required files..."
-            ./scripts/check-files.sh
-            
-            # Build and start services
+            # Build and start services with BuildKit enabled
+            export DOCKER_BUILDKIT=1
             docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml build --no-cache
             docker compose -f docker-compose.prod.yml up -d
@@ -73,13 +69,26 @@ jobs:
             # Clean up unused Docker resources
             docker system prune -af --volumes
             
-            # Update Nginx configuration if needed (requires sudo access for the user)
+            # Update Nginx configuration if needed
             if [ -f nginx-host-config.conf ] && [ -x "$(command -v sudo)" ]; then
               echo "Updating Nginx configuration..."
-              sudo scripts/update-nginx-config.sh
+              sudo cp nginx-host-config.conf /etc/nginx/sites-available/jsresources
+              
+              if [ ! -f /etc/nginx/sites-enabled/jsresources ]; then
+                sudo ln -s /etc/nginx/sites-available/jsresources /etc/nginx/sites-enabled/
+              fi
+              
+              if [ -f /etc/nginx/sites-enabled/default ]; then
+                sudo rm /etc/nginx/sites-enabled/default
+              fi
+              
+              if ! sudo certbot certificates | grep -q "admin.jsresources.dev"; then
+                sudo certbot --nginx -d jsresources.dev -d api.jsresources.dev -d admin.jsresources.dev
+              fi
+              
+              sudo systemctl reload nginx
             fi
             
             # Final disk space check
-            echo "Final disk space:"
             df -h /
-          EOF
+          ENDSSH

@@ -10,11 +10,11 @@ COPY package.json ./
 COPY tsconfig.json ./
 COPY vite.config.ts ./
 
-# The shared directory will be mounted as a volume at runtime
-# Don't try to copy it during build
-
-# Copy source code
+# Copy source code (includes the shared directory we prepared)
 COPY . .
+
+# For local development with pnpm workspaces, replace workspace: dependency with local path
+RUN sed -i 's/"@jsr\/shared": "workspace:\*"/"@jsr\/shared": "file:src\/shared"/g' package.json
 
 # Build the application
 RUN pnpm install

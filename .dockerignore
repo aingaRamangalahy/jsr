@@ -1,0 +1,14 @@
+node_modules
+.git
+.github
+.gitignore
+*.md
+docker-compose*
+.env*
+nginx/
+scripts/
+certbot/
+**/.DS_Store
+**/dist
+**/build
+**/.cache 

@@ -9,11 +9,11 @@ RUN npm install -g pnpm
 COPY package.json ./
 COPY tsconfig.json ./
 
-# The shared directory will be mounted as a volume at runtime
-# Don't try to copy it during build
-
-# Copy source code
+# Copy source code (includes the shared directory we prepared)
 COPY . .
+
+# For local development with pnpm workspaces, replace workspace: dependency with local path
+RUN sed -i 's/"@jsr\/shared": "workspace:\*"/"@jsr\/shared": "file:src\/shared"/g' package.json
 
 # Build the application
 RUN pnpm install
@@ -33,9 +33,8 @@ COPY package.json ./
 # Copy the built application from builder stage
 COPY --from=builder /app/dist ./dist
 
-# The shared directory will be mounted at runtime
-
 # Install only production dependencies
+RUN sed -i 's/"@jsr\/shared": "workspace:\*"/"@jsr\/shared": "file:dist\/shared"/g' package.json
 RUN pnpm install --prod
 
 # Environment variables
