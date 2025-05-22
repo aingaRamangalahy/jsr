@@ -5,7 +5,9 @@ import {
   bookmarkResource,
   removeBookmark,
   getUserBookmarks,
-  voteResource
+  voteResource,
+  getUserVote,
+  getResourceInteractions
 } from '../controllers/interaction.controller';
 import { protect } from '../middleware/auth';
 
@@ -22,5 +24,9 @@ router.get('/bookmarks', protect, getUserBookmarks);
 
 // Vote routes
 router.post('/resources/:resourceId/vote', protect, voteResource);
+router.get('/resources/:resourceId/vote', protect, getUserVote);
+
+// Batch operations
+router.post('/resources/interactions', protect, getResourceInteractions);
 
 export default router; 

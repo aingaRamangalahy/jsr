@@ -3,6 +3,8 @@ import { ref, computed } from 'vue'
 import api from '../services/api.service'
 import * as supabaseService from '../services/supabase.service'
 import type { User as SupabaseUser } from '@supabase/supabase-js'
+// Import will be resolved at runtime when store is actually used
+import { useInteractionsStore } from './interactions.store'
 
 export interface User {
   id: string
@@ -156,6 +158,11 @@ export const useAuthStore = defineStore('auth', () => {
       supabaseUser.value = null
       token.value = null
       localStorage.removeItem('auth_token')
+      
+      // Clear interactions store
+      // Note: We use this approach to avoid circular imports
+      const interactionsStore = useInteractionsStore()
+      interactionsStore.clearInteractions()
       
       return true
     } catch (err) {

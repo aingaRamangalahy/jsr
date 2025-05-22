@@ -7,6 +7,7 @@ import {
   User,
   Vote
 } from '@jsr/shared/types';
+import { ResourceWithInteractions } from './resource.service';
 
 // Additional types needed for interactions
 export interface CommentInput {
@@ -17,10 +18,16 @@ export interface VoteInput {
   value: 'up' | 'down' | 'none'; // 'up' for upvote, 'down' for downvote, 'none' to remove vote
 }
 
-export interface ResourceWithInteractions extends Resource {
-  userVote?: 'up' | 'down' | null;
-  isBookmarked?: boolean;
-  commentsCount?: number;
+// Interface for the response of batch resource interactions
+export interface ResourceInteractions {
+  [resourceId: string]: {
+    vote: Vote | null;
+    isBookmarked: boolean;
+    votes: {
+      upvotes: number;
+      downvotes: number;
+    };
+  };
 }
 
 // Service
@@ -78,12 +85,25 @@ export const interactionService = {
   },
 
   // Vote Methods
-  async voteResource(resourceId: string, vote: VoteInput): Promise<ApiResponse<Vote>> {
+  async voteResource(resourceId: string, vote: VoteInput): Promise<ApiResponse<{
+    vote: Vote | null;
+    votes: { upvotes: number; downvotes: number };
+  }>> {
     try {
       const { data } = await api.post(`/resources/${resourceId}/vote`, vote);
       return data;
     } catch (error) {
       console.error('Error voting on resource:', error);
+      throw error;
+    }
+  },
+  
+  async getUserVote(resourceId: string): Promise<ApiResponse<{vote: Vote | null, votes: {upvotes: number, downvotes: number}}>> {
+    try {
+      const { data } = await api.get(`/resources/${resourceId}/vote`);
+      return data;
+    } catch (error) {
+      console.error('Error getting user vote:', error);
       throw error;
     }
   },
@@ -105,5 +125,33 @@ export const interactionService = {
       console.error('Error checking bookmark status:', error);
       return false;
     }
+  },
+
+  // New batch method to get interactions for multiple resources
+  async getResourcesInteractions(resourceIds: string[]): Promise<ApiResponse<ResourceInteractions>> {
+    try {
+      const { data } = await api.post('/resources/interactions', { resourceIds });
+      return data;
+    } catch (error) {
+      console.error('Error fetching resource interactions:', error);
+      throw error;
+    }
+  },
+
+  // Extract user interactions from ResourceWithInteractions objects
+  extractInteractionsFromResources(resources: ResourceWithInteractions[]): ResourceInteractions {
+    const interactionsMap: ResourceInteractions = {};
+    
+    resources.forEach(resource => {
+      if (resource.id && resource.userInteractions) {
+        interactionsMap[resource.id] = {
+          vote: resource.userInteractions.vote,
+          isBookmarked: resource.userInteractions.isBookmarked,
+          votes: resource.votes || { upvotes: 0, downvotes: 0 }
+        };
+      }
+    });
+    
+    return interactionsMap;
   }
 }; 

@@ -5,6 +5,7 @@ import CommentModel from './Comment';
 import ResourceModel from './Resource';
 import ResourceTypeModel from './ResourceType';
 import UserModel from './User';
+import VoteModel from './Vote';
 
 export {
   AdminModel,
@@ -13,5 +14,6 @@ export {
   CommentModel,
   ResourceModel,
   ResourceTypeModel,
-  UserModel
+  UserModel,
+  VoteModel
 }; 

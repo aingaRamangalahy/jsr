@@ -1,6 +1,37 @@
 import { Request, Response } from 'express';
-import { ResourceModel } from '../models';
+import { ResourceModel, VoteModel, BookmarkModel, CommentModel } from '../models';
 import { PricingType, ResourceStatus } from '@jsr/shared';
+import { getPreview } from '../utils/preview';
+
+// Interface for resource with user interactions
+interface ResourceWithUserInteractions {
+  _id: any;
+  name: string;
+  description: string;
+  url: string;
+  category: any;
+  type: any;
+  difficulty: string;
+  tags: string[];
+  status: string;
+  createdBy: any;
+  createdAt: Date;
+  updatedAt: Date;
+  pricingType: string;
+  price?: number;
+  imageUrl?: string;
+  providerIcon?: string;
+  votes: {
+    upvotes: number;
+    downvotes: number;
+  };
+  commentCount: number;
+  userInteractions?: {
+    vote: any | null;
+    isBookmarked: boolean;
+  };
+  [key: string]: any; // Allow for additional properties
+}
 
 /**
  * Helper function to build query, apply pagination, and fetch resources
@@ -13,7 +44,7 @@ const fetchResourcesWithPagination = async (
   req: Request
 ) => {
   // Extract query parameters
-  const { category, type, difficulty, pricingType, status, page = 1, limit = 50 } = req.query;
+  const { category, type, difficulty, pricingType, status, search, page = 1, limit = 50 } = req.query;
   
   // Copy the base query to avoid mutating the original
   const query = { ...baseQuery };
@@ -54,16 +85,54 @@ const fetchResourcesWithPagination = async (
   
   if (status) query.status = status;
   
+  // Add search functionality
+  if (search && typeof search === 'string' && search.trim() !== '') {
+    const searchTerm = search.trim();
+    
+    // Try to use text search first (more efficient for indexed fields)
+    if (searchTerm.length >= 3) {
+      // For longer search terms, use text search which is more efficient 
+      // but requires at least 3 characters
+      query.$text = { $search: searchTerm };
+    } else {
+      // For shorter search terms or as a fallback, use regex search
+      const searchRegex = new RegExp(searchTerm, 'i');
+      
+      // Search in multiple fields: name, description, tags
+      query.$or = [
+        { name: searchRegex },
+        { description: searchRegex },
+        { tags: searchRegex }
+      ];
+    }
+  }
+  
   // Calculate pagination
   const skip = (Number(page) - 1) * Number(limit);
   
+  // Start with a base sort order
+  let sortOptions: Record<string, any> = { createdAt: -1 };
+  
+  // If using text search, sort by score first
+  if (query.$text) {
+    sortOptions = { score: { $meta: "textScore" } };
+  }
+  
   // Execute query with pagination
-  const resources = await ResourceModel.find(query)
+  let findQuery = ResourceModel.find(query);
+  
+  // If using text search, include the text score
+  if (query.$text) {
+    findQuery = findQuery.select({ score: { $meta: "textScore" } });
+  }
+  
+  // Execute query with population, pagination and sorting
+  const resources = await findQuery
     .populate('category')
     .populate('type')
     .skip(skip)
     .limit(Number(limit))
-    .sort({ createdAt: -1 });
+    .sort(sortOptions);
   
   // Get total count for pagination
   const total = await ResourceModel.countDocuments(query);
@@ -76,7 +145,63 @@ const fetchResourcesWithPagination = async (
     pages: Math.ceil(total / Number(limit))
   };
   
-  return { resources, paginationData };
+  // Convert resources to plain objects for easier manipulation
+  const resourceObjects: ResourceWithUserInteractions[] = resources.map(resource => resource.toObject());
+  
+  // Fetch comment counts for all resources in one query
+  const resourceIds = resources.map(resource => resource._id);
+  const commentCounts = await CommentModel.aggregate([
+    { $match: { resourceId: { $in: resourceIds } } },
+    { $group: { _id: '$resourceId', count: { $sum: 1 } } }
+  ]);
+  
+  // Create a map of resource ID to comment count for faster lookup
+  const commentCountMap = new Map();
+  commentCounts.forEach(item => {
+    commentCountMap.set(item._id.toString(), item.count);
+  });
+  
+  // Add comment counts to resources
+  resourceObjects.forEach(resource => {
+    const resourceId = resource._id.toString();
+    resource.commentCount = commentCountMap.get(resourceId) || 0;
+  });
+  
+  // If user is authenticated, include interactions data
+  if (req.user && resources.length > 0) {
+    const userId = req.user.id;
+    const resourceIds = resources.map(resource => resource._id);
+    
+    // Fetch votes and bookmarks in parallel
+    const [votes, bookmarks] = await Promise.all([
+      VoteModel.find({ userId, resourceId: { $in: resourceIds } }),
+      BookmarkModel.find({ userId, resourceId: { $in: resourceIds } })
+    ]);
+    
+    // Map votes and bookmarks to resources
+    const resourcesWithInteractions = resourceObjects.map(resourceObject => {
+      const resourceId = resourceObject._id.toString();
+      
+      // Find user's vote for this resource
+      const vote = votes.find(v => v.resourceId.toString() === resourceId);
+      
+      // Check if resource is bookmarked
+      const isBookmarked = bookmarks.some(b => b.resourceId.toString() === resourceId);
+      
+      // Add interaction data
+      resourceObject.userInteractions = {
+        vote: vote || null,
+        isBookmarked,
+      };
+      
+      return resourceObject;
+    });
+    
+    return { resources: resourcesWithInteractions, paginationData };
+  }
+  
+  // For unauthenticated users, just return resources with votes and comment counts
+  return { resources: resourceObjects, paginationData };
 };
 
 /**
@@ -134,10 +259,42 @@ export const getResourceById = async (req: Request, res: Response): Promise<void
       return;
     }
     
-    // Send response
+    // Convert to plain object for manipulation
+    const resourceObject: ResourceWithUserInteractions = resource.toObject();
+    
+    // Get comment count
+    const commentCount = await CommentModel.countDocuments({ resourceId: id });
+    resourceObject.commentCount = commentCount;
+    
+    // If user is authenticated, include interaction data
+    if (req.user) {
+      const userId = req.user.id;
+      const resourceId = resource._id;
+      
+      // Fetch votes and bookmarks in parallel
+      const [vote, bookmark] = await Promise.all([
+        VoteModel.findOne({ userId, resourceId }),
+        BookmarkModel.findOne({ userId, resourceId })
+      ]);
+      
+      // Add interaction data
+      resourceObject.userInteractions = {
+        vote: vote || null,
+        isBookmarked: !!bookmark
+      };
+      
+      // Send response with interactions
+      res.status(200).json({
+        status: 'success',
+        data: resourceObject
+      });
+      return;
+    }
+    
+    // Send response without interactions for unauthenticated users
     res.status(200).json({
       status: 'success',
-      data: resource
+      data: resourceObject
     });
   } catch (error) {
     console.error('Error fetching resource:', error);
@@ -172,7 +329,7 @@ export const createResource = async (req: Request, res: Response): Promise<void>
     // Extract resource data from request body
     const {
       name, description, url, category, type, difficulty, tags,
-      pricingType, price
+      pricingType, price, imageUrl, providerIcon
     } = req.body;
     
     // Validate required fields
@@ -207,6 +364,8 @@ export const createResource = async (req: Request, res: Response): Promise<void>
       category,
       type,
       difficulty,
+      imageUrl,
+      providerIcon,
       tags: tags || [],
       status: 'pending', // All new resources start as pending
       createdBy: req.user.id,
@@ -545,3 +704,61 @@ export const getUserSubmittedResources = async (req: Request, res: Response): Pr
   }
 };
 
+/**
+ * Prefetch resources (not only for admin)
+ */
+export const prefetchResources = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { url } = req.query;
+    
+    if (!url || typeof url !== 'string') {
+      res.status(400).json({
+        status: 'error',
+        error: {
+          message: 'URL parameter is required',
+          code: 'MISSING_URL'
+        }
+      });
+      return;
+    }
+    
+    // Validate URL format
+    try {
+      new URL(url);
+    } catch (e) {
+      res.status(400).json({
+        status: 'error',
+        error: {
+          message: 'Invalid URL format',
+          code: 'INVALID_URL'
+        }
+      });
+      return;
+    }
+    
+    // Fetch link metadata from the URL
+    const linkMetadata = await getPreview(url);
+    
+    // Send the metadata as response
+    res.status(200).json({
+      status: 'success',
+      data: {
+        url: linkMetadata.url,
+        name: linkMetadata.title || '',
+        description: linkMetadata.description || '',
+        imageUrl: linkMetadata.images.length > 0 ? linkMetadata.images[0] : '',
+        providerIcon: linkMetadata.favicon || ''
+      }
+    });
+  } catch (error: any) { // Type assertion for error
+    console.error('Error prefetching resources:', error);
+    
+    res.status(500).json({
+      status: 'error',
+      error: {
+        message: error.message || 'Failed to prefetch resource metadata',
+        code: 'PREFETCH_ERROR'
+      }
+    });
+  }
+};

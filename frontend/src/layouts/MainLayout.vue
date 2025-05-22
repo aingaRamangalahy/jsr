@@ -12,12 +12,20 @@
                 <Input
                   v-model="searchQuery"
                   placeholder="Search..."
-                  class="pl-9 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
+                  class="pl-9 pr-10 bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
                   @keyup.enter="handleSearch"
                 />
                 <SearchIcon
                   class="absolute left-3 top-2.5 h-4 w-4 text-zinc-500 dark:text-zinc-500"
                 />
+                <!-- Clear button -->
+                <button 
+                  v-if="searchQuery" 
+                  class="absolute right-3 top-2.5 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 focus:outline-none"
+                  @click="clearSearch"
+                >
+                  <XIcon class="h-4 w-4" />
+                </button>
               </div>
             </div>
 
@@ -99,7 +107,8 @@ import {
   SearchIcon,
   UserIcon,
   GithubIcon,
-  LogOutIcon
+  LogOutIcon,
+  XIcon
 } from "lucide-vue-next";
 import {
   DropdownMenu,
@@ -114,17 +123,53 @@ const router = useRouter();
 const resourceStore = useResourceStore();
 const authStore = useAuthStore();
 const searchQuery = ref("");
+let searchTimeout: any = null;
 
 // Get authentication status and user info
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const userDisplayName = computed(() => authStore.userDisplayName);
 const userAvatar = computed(() => authStore.userAvatar);
 
-const handleSearch = () => {
+// Watch for changes to the search query with debouncing
+watch(searchQuery, (newValue) => {
+  // Clear any existing timeout
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+  
+  // Set a new timeout to debounce the search
+  searchTimeout = setTimeout(() => {
+    // Only trigger search if query is at least 2 characters or empty (to clear the search)
+    if (newValue.length >= 2 || newValue === '') {
+      doSearch();
+    }
+  }, 500); // 500ms debounce delay
+});
+
+// Function to clear the search
+const clearSearch = () => {
+  searchQuery.value = "";
+  doSearch();
+};
+
+// Function to perform the actual search
+const doSearch = () => {
   resourceStore.updateFilters({ search: searchQuery.value });
+  
+  // Navigate to resources page if not there already
   if (router.currentRoute.value.path !== "/resources") {
     router.push("/resources");
   }
+};
+
+const handleSearch = () => {
+  // Clear any pending timeout
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+  
+  // Immediately perform search
+  doSearch();
 };
 
 const handleLogout = async () => {

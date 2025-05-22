@@ -52,14 +52,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import { useResourceStore } from "@/stores/resource";
+import { useAuthStore } from "@/stores/auth.store";
+import { resourceService } from "@/services/resource.service";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import ResourceCard from "@/components/ResourceCard.vue";
 import { toast } from "vue-sonner";
+import { useInteractionsStore } from '@/stores/interactions.store';
 import {
   FilterIcon,
   StarIcon,
@@ -70,13 +73,41 @@ import {
 } from "lucide-vue-next";
 
 const resourceStore = useResourceStore();
+const authStore = useAuthStore();
+const interactionsStore = useInteractionsStore();
 const searchQuery = ref("");
 const selectedTab = ref("feed");
 
-// Load resources on mount
+// Load resources on mount - interactions will be embedded if user is authenticated
 onMounted(() => {
   resourceStore.loadResources();
 });
+
+// Single watcher for both resource changes and authentication changes
+watch(
+  [() => resourceStore.resources, () => authStore.isAuthenticated],
+  ([newResources, isAuthenticated]) => {
+    if (isAuthenticated && newResources.length > 0) {
+      // Get resources that need interaction data
+      const resourcesNeedingInteractions = newResources.filter(
+        resource => resource.id && !resource.userInteractions
+      );
+      
+      // Only fetch interactions for resources that don't have them embedded
+      if (resourcesNeedingInteractions.length > 0) {
+        console.log(`Fetching interactions for ${resourcesNeedingInteractions.length} resources`);
+        const resourceIds = resourcesNeedingInteractions
+          .map(resource => resource.id)
+          .filter(Boolean);
+          
+        if (resourceIds.length > 0) {
+          interactionsStore.fetchResourceInteractions(resourceIds);
+        }
+      }
+    }
+  },
+  { deep: true, immediate: true }
+);
 
 // Handle search
 const handleSearch = () => {

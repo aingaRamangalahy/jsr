@@ -7,10 +7,28 @@
       {{ error }}
     </div>
     <div v-else-if="resource" class="max-w-4xl mx-auto">
+      <!-- Resource Image -->
+      <div class="w-full h-60 mb-8 relative overflow-hidden rounded-lg">
+        <img 
+          :src="resource.imageUrl || '/images/resource-placeholder.svg'" 
+          :alt="resource.name" 
+          class="w-full h-full object-cover object-center"
+        />
+        <div class="absolute inset-0 bg-black/30"></div>
+      </div>
+
       <!-- Resource Header -->
       <div class="mb-8">
         <div class="flex justify-between items-start gap-4 mb-4">
-          <h1 class="text-3xl font-bold">{{ resource.name }}</h1>
+          <div class="flex items-center gap-3">
+            <img 
+              v-if="resource.providerIcon" 
+              :src="resource.providerIcon" 
+              :alt="'Provider icon'" 
+              class="w-8 h-8 object-contain"
+            />
+            <h1 class="text-3xl font-bold">{{ resource.name }}</h1>
+          </div>
           <Badge :variant="resource.pricingType">
             {{ resource.pricingType === 'free' ? 'Free' : `$${resource.price?.toFixed(2)}` }}
           </Badge>
@@ -24,149 +42,172 @@
 
       <Separator class="my-6" />
 
-      <!-- Resource Details -->
-      <Card class="mb-8">
-        <CardHeader>
-          <CardTitle>Description</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p class="text-muted-foreground">{{ resource.description }}</p>
-        </CardContent>
-      </Card>
+      <!-- Restructured Content Layout -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Main Content (Left Side) -->
+        <div class="md:col-span-2 space-y-8">
+          <!-- Resource Description -->
+          <Card>
+            <CardHeader>
+              <CardTitle>Description</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p class="text-muted-foreground">{{ resource.description }}</p>
+            </CardContent>
+          </Card>
 
-      <!-- Actions -->
-      <div class="flex gap-4 mb-8">
-        <Button @click="openResource" class="flex-1">
-          Open Resource
-        </Button>
-        <Button 
-          @click="handleBookmark" 
-          variant="outline" 
-          class="flex-1"
-          :disabled="!authStore.isAuthenticated"
-        >
-          {{ isBookmarked ? 'Remove Bookmark' : 'Bookmark' }}
-        </Button>
-      </div>
-
-      <!-- Voting -->
-      <div class="flex gap-4 mb-8">
-        <Button 
-          @click="handleVote('upvote')" 
-          variant="outline"
-          :class="{ 'bg-primary text-primary-foreground': userVote?.value === 'up' }"
-          :disabled="!authStore.isAuthenticated"
-        >
-          Upvote
-        </Button>
-        <Button 
-          @click="handleVote('downvote')" 
-          variant="outline"
-          :class="{ 'bg-destructive text-destructive-foreground': userVote?.value === 'down' }"
-          :disabled="!authStore.isAuthenticated"
-        >
-          Downvote
-        </Button>
-      </div>
-
-      <!-- Comments Section -->
-      <Card class="mb-8">
-        <CardHeader>
-          <CardTitle>Comments</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <!-- Comment Form -->
-          <div v-if="authStore.isAuthenticated" class="mb-6">
-            <Textarea
-              v-model="newComment"
-              placeholder="Write a comment..."
-              :disabled="submittingComment"
-              class="mb-2"
-            />
+          <!-- Actions -->
+          <div class="flex gap-4">
+            <Button @click="openResource" class="flex-1">
+              Open Resource
+            </Button>
             <Button 
-              @click="submitComment" 
-              :disabled="submittingComment"
-              class="w-full"
+              @click="handleBookmark" 
+              variant="outline" 
+              class="flex-1 flex items-center justify-center gap-2"
+              :disabled="!authStore.user"
             >
-              {{ submittingComment ? 'Posting...' : 'Post Comment' }}
+              <BookmarkIcon class="h-4 w-4" :class="{ 'fill-current': isBookmarked }" />
+              {{ isBookmarked ? 'Remove Bookmark' : 'Bookmark' }}
             </Button>
           </div>
-          <div v-else class="text-center text-muted-foreground mb-6">
-            Please login to comment
+
+          <!-- Voting -->
+          <div class="flex gap-4">
+            <Button 
+              @click="handleVote('upvote')" 
+              variant="outline"
+              :class="{ 
+                'bg-primary/10 hover:bg-primary/10 text-green-500': userVote?.value === 'up'
+              }"
+              :disabled="!authStore.user"
+              class="flex items-center gap-2"
+            >
+              <ThumbsUpIcon 
+                class="h-4 w-4" 
+                :class="{ 'text-green-500 fill-current': userVote?.value === 'up' }"
+              />
+              <span>Upvote</span>
+              <Badge variant="secondary" class="ml-1">{{ voteStats.upvotes || 0 }}</Badge>
+            </Button>
+            <Button 
+              @click="handleVote('downvote')" 
+              variant="outline"
+              :class="{ 
+                'bg-destructive/10 hover:bg-destructive/10 text-red-500': userVote?.value === 'down'
+              }"
+              :disabled="!authStore.user"
+              class="flex items-center gap-2"
+            >
+              <ThumbsDownIcon 
+                class="h-4 w-4" 
+                :class="{ 'text-red-500 fill-current': userVote?.value === 'down' }"
+              />
+              <span>Downvote</span>
+              <Badge variant="secondary" class="ml-1">{{ voteStats.downvotes || 0 }}</Badge>
+            </Button>
           </div>
 
-          <!-- Comments List -->
-          <div v-if="comments.length > 0" class="space-y-4">
-            <div v-for="comment in comments" :key="comment.id" class="flex gap-4">
-              <Avatar>
-                <AvatarImage :src="getUserInfo(comment.userId)?.avatar || ''" />
-                <AvatarFallback>{{ getUserInfo(comment.userId)?.name?.[0] || '?' }}</AvatarFallback>
-              </Avatar>
-              <div class="flex-1">
-                <div class="flex justify-between items-start">
-                  <div>
-                    <p class="font-medium">{{ getUserInfo(comment.userId)?.name }}</p>
-                    <p class="text-sm text-muted-foreground">{{ new Date(comment.createdAt).toLocaleDateString() }}</p>
+          <!-- Comments Section -->
+          <Card>
+            <CardHeader>
+              <CardTitle>Comments ({{ commentCount }})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <!-- Comment Form -->
+              <div v-if="authStore.user" class="mb-6">
+                <Textarea
+                  v-model="newComment"
+                  placeholder="Write a comment..."
+                  :disabled="submittingComment"
+                  class="mb-2"
+                />
+                <Button 
+                  @click="submitComment" 
+                  :disabled="submittingComment"
+                  class="w-full"
+                >
+                  {{ submittingComment ? 'Posting...' : 'Post Comment' }}
+                </Button>
+              </div>
+              <div v-else class="text-center text-muted-foreground mb-6">
+                Please login to comment
+              </div>
+
+              <!-- Comments List -->
+              <div v-if="comments.length > 0" class="space-y-4">
+                <div v-for="comment in comments" :key="comment.id" class="flex gap-4">
+                  <Avatar>
+                    <AvatarImage :src="getUserInfo(comment.userId)?.avatar || ''" />
+                    <AvatarFallback>{{ getUserInfo(comment.userId)?.name?.[0] || '?' }}</AvatarFallback>
+                  </Avatar>
+                  <div class="flex-1">
+                    <div class="flex justify-between items-start">
+                      <div>
+                        <p class="font-medium">{{ getUserInfo(comment.userId)?.name }}</p>
+                        <p class="text-sm text-muted-foreground">{{ new Date(comment.createdAt).toLocaleDateString() }}</p>
+                      </div>
+                      <Button 
+                        v-if="isCurrentUser(comment.userId)"
+                        variant="ghost" 
+                        size="sm"
+                        @click="deleteComment(comment.id)"
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                    <p class="mt-2">{{ comment.content }}</p>
                   </div>
-                  <Button 
-                    v-if="isCurrentUser(comment.userId)"
-                    variant="ghost" 
-                    size="sm"
-                    @click="deleteComment(comment.id)"
-                  >
-                    Delete
-                  </Button>
                 </div>
-                <p class="mt-2">{{ comment.content }}</p>
               </div>
-            </div>
-          </div>
-          <div v-else class="text-center text-muted-foreground">
-            No comments yet. Be the first to comment!
-          </div>
-        </CardContent>
-      </Card>
+              <div v-else class="text-center text-muted-foreground">
+                No comments yet. Be the first to comment!
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      <!-- Additional Information -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <dl class="space-y-2">
-              <div>
-                <dt class="text-sm font-medium text-muted-foreground">Category</dt>
-                <dd>{{ typeof resource.category === 'object' ? resource.category.name : resource.category }}</dd>
-              </div>
-              <div>
-                <dt class="text-sm font-medium text-muted-foreground">Difficulty</dt>
-                <dd>{{ resource.difficulty }}</dd>
-              </div>
-              <div>
-                <dt class="text-sm font-medium text-muted-foreground">Type</dt>
-                <dd>{{ typeof resource.type === 'object' ? resource.type.name : resource.type }}</dd>
-              </div>
-            </dl>
-          </CardContent>
-        </Card>
+        <!-- Sidebar Content (Right Side) -->
+        <div class="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Details</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <dl class="space-y-2">
+                <div>
+                  <dt class="text-sm font-medium text-muted-foreground">Category</dt>
+                  <dd>{{ typeof resource.category === 'object' ? resource.category.name : resource.category }}</dd>
+                </div>
+                <div>
+                  <dt class="text-sm font-medium text-muted-foreground">Difficulty</dt>
+                  <dd>{{ resource.difficulty }}</dd>
+                </div>
+                <div>
+                  <dt class="text-sm font-medium text-muted-foreground">Type</dt>
+                  <dd>{{ typeof resource.type === 'object' ? resource.type.name : resource.type }}</dd>
+                </div>
+              </dl>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Tags</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div class="flex flex-wrap gap-2">
-              <Badge 
-                v-for="tag in resource.tags" 
-                :key="tag" 
-                variant="secondary"
-              >
-                {{ tag }}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Tags</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div class="flex flex-wrap gap-2">
+                <Badge 
+                  v-for="tag in resource.tags" 
+                  :key="tag" 
+                  variant="secondary"
+                >
+                  {{ tag }}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   </div>
@@ -183,9 +224,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { resourceService } from '@/services/resource.service'
 import { interactionService, CommentInput, VoteInput } from '@/services/interaction.service'
-import type { Resource, Comment, Category, User } from '@jsr/shared/types'
+import type { Comment, Category, User } from '@jsr/shared/types'
+import type { Resource } from '@/types'
 import { toast } from 'vue-sonner'
 import { useAuthStore } from '@/stores/auth'
+import { ThumbsUpIcon, ThumbsDownIcon, BookmarkIcon } from 'lucide-vue-next'
 
 // Custom Vote interface to match the structure in interaction service
 interface Vote {
@@ -209,6 +252,8 @@ const userVote = ref<Vote | null>(null)
 const isBookmarked = ref(false)
 const newComment = ref('')
 const submittingComment = ref(false)
+const voteStats = ref({ upvotes: 0, downvotes: 0 })
+const commentCount = computed(() => resource.value?.commentCount || comments.value.length || 0)
 
 const loadResource = async () => {
   try {
@@ -216,11 +261,19 @@ const loadResource = async () => {
     error.value = null
     const { data } = await resourceService.getResourceById(route.params.id as string)
     resource.value = data
-    if (authStore.isAuthenticated) {
-      await Promise.all([
-        loadComments(),
-        loadUserInteractions()
-      ])
+    await loadComments()
+    
+    // Set vote stats directly from resource if user is not authenticated
+    if (!authStore.user) {
+      voteStats.value = {
+        upvotes: data.votes?.upvotes || 0,
+        downvotes: data.votes?.downvotes || 0
+      }
+      
+      // Load comments for all users
+    } else {
+      // For authenticated users, load user interactions
+      await loadUserInteractions()
     }
   } catch (err) {
     console.log("error", err)
@@ -247,8 +300,15 @@ const loadUserInteractions = async () => {
     // Check if user has bookmarked this resource
     isBookmarked.value = await interactionService.hasBookmarked(route.params.id as string)
     
-    // TODO: Implement getResourceVote in interaction service
-    // For now, we'll leave userVote as null
+    // Get user's vote and vote statistics
+    const voteResponse = await interactionService.getUserVote(route.params.id as string)
+    if (voteResponse.status === 'success' && voteResponse.data) {
+      userVote.value = voteResponse.data.vote
+      voteStats.value = voteResponse.data.votes || {
+        upvotes: 0,
+        downvotes: 0
+      }
+    }
   } catch (err) {
     toast.error('Failed to load user interactions')
   }
@@ -261,7 +321,7 @@ const openResource = () => {
 }
 
 const handleVote = async (voteType: 'upvote' | 'downvote') => {
-  if (!authStore.isAuthenticated) {
+  if (!authStore.user) {
     toast.error('Please login to vote')
     return
   }
@@ -278,7 +338,30 @@ const handleVote = async (voteType: 'upvote' | 'downvote') => {
     
     const response = await interactionService.voteResource(resource.value!.id, voteValue)
     if (response.status === 'success' && response.data) {
-      userVote.value = voteValue.value === 'none' ? null : response.data
+      // Update vote stats based on previous and new vote
+      if (userVote.value?.value === 'up' && voteValue.value === 'none') {
+        voteStats.value.upvotes--
+      } else if (userVote.value?.value === 'down' && voteValue.value === 'none') {
+        voteStats.value.downvotes--
+      } else if (userVote.value?.value === 'up' && voteValue.value === 'down') {
+        voteStats.value.upvotes--
+        voteStats.value.downvotes++
+      } else if (userVote.value?.value === 'down' && voteValue.value === 'up') {
+        voteStats.value.downvotes--
+        voteStats.value.upvotes++
+      } else if (voteValue.value === 'up') {
+        voteStats.value.upvotes++
+      } else if (voteValue.value === 'down') {
+        voteStats.value.downvotes++
+      }
+      
+      // Fix the type error by extracting the vote from the response
+      userVote.value = voteValue.value === 'none' ? null : response.data.vote;
+      
+      // Also update voteStats from the response if available
+      if (response.data.votes) {
+        voteStats.value = response.data.votes;
+      }
     }
   } catch (err) {
     toast.error('Failed to vote')

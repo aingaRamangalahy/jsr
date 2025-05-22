@@ -1,10 +1,12 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { Resource } from '@jsr/shared/types'
-import { resourceService } from '@/services/resource.service'
+import { resourceService, ResourceWithInteractions } from '@/services/resource.service'
+import { useInteractionsStore } from './interactions.store'
+import { interactionService } from '@/services/interaction.service'
 
 export const useResourceStore = defineStore('resource', () => {
-  const resources = ref<Resource[]>([])
+  const resources = ref<ResourceWithInteractions[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
   const currentPage = ref(1)
@@ -16,9 +18,28 @@ export const useResourceStore = defineStore('resource', () => {
     pricingType: [] as ('free' | 'paid')[],
     search: ''
   })
+  
+  // Get the interactions store for syncing
+  const interactionsStore = useInteractionsStore()
 
   // Computed property for filtered resources
   const filteredResources = computed(() => resources.value)
+
+  // Sync embedded interactions to the interactions store
+  const syncInteractionsToStore = (resourcesList: ResourceWithInteractions[]) => {
+    // Check if any resources have embedded interactions
+    const resourcesWithInteractions = resourcesList.filter(
+      resource => resource.id && resource.userInteractions !== undefined
+    );
+    
+    if (resourcesWithInteractions.length > 0) {
+      // Extract interactions using the utility method
+      const interactionsMap = interactionService.extractInteractionsFromResources(resourcesWithInteractions);
+      
+      // Update the interactions store with the extracted data
+      interactionsStore.updateInteractionsMap(interactionsMap);
+    }
+  }
 
   // Load resources with current filters
   const loadResources = async () => {
@@ -27,6 +48,10 @@ export const useResourceStore = defineStore('resource', () => {
       error.value = null
       const response = await resourceService.getResources(filters.value, currentPage.value)
       resources.value = response.data
+      
+      // Sync interactions to the store if they exist in the response
+      syncInteractionsToStore(resources.value)
+      
       totalPages.value = response.pagination.pages
     } catch (err) {
       error.value = 'Failed to load resources'
@@ -43,6 +68,10 @@ export const useResourceStore = defineStore('resource', () => {
       error.value = null
       const response = await resourceService.getFreeResources(currentPage.value)
       resources.value = response.data
+      
+      // Sync interactions to the store if they exist in the response
+      syncInteractionsToStore(resources.value)
+      
       totalPages.value = response.pagination.pages
     } catch (err) {
       error.value = 'Failed to load free resources'
@@ -59,6 +88,10 @@ export const useResourceStore = defineStore('resource', () => {
       error.value = null
       const response = await resourceService.getPaidResources(currentPage.value)
       resources.value = response.data
+      
+      // Sync interactions to the store if they exist in the response
+      syncInteractionsToStore(resources.value)
+      
       totalPages.value = response.pagination.pages
     } catch (err) {
       error.value = 'Failed to load paid resources'
@@ -104,6 +137,33 @@ export const useResourceStore = defineStore('resource', () => {
     loadResources()
   }
 
+  // Get a resource by ID with interactions
+  const getResourceById = async (id: string): Promise<ResourceWithInteractions | null> => {
+    try {
+      loading.value = true
+      error.value = null
+      const response = await resourceService.getResourceById(id)
+      
+      if (response.status === 'success' && response.data) {
+        // Sync interaction data if available
+        if (response.data.userInteractions) {
+          // Use the extract method to update interactions store
+          const resourceWithInteractions = [response.data];
+          syncInteractionsToStore(resourceWithInteractions);
+        }
+        
+        return response.data
+      }
+      return null
+    } catch (err) {
+      error.value = 'Failed to load resource'
+      console.error('Error loading resource:', err)
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     resources,
     loading,
@@ -116,6 +176,7 @@ export const useResourceStore = defineStore('resource', () => {
     loadFreeResources,
     loadPaidResources,
     updateFilters,
-    changePage
+    changePage,
+    getResourceById
   }
 }) 

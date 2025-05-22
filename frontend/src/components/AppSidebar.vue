@@ -3,8 +3,8 @@
     <SidebarHeader>
       <div class="flex items-center justify-between p-4">
         <div @click="navigateTo('/')" class="flex items-center gap-2 px-2 py-1 rounded-md bg-primary/10 text-primary font-bold cursor-pointer">
-          <span class="text-xl">~/</span>
-          <span class="text-2xl tracking-tight">js resources</span>
+          <img src="/images/logo.svg" alt="jsresources icon" class="w-6 h-6" />
+          <span class="text-xl tracking-tight">jsresources<span class="text-sm opacity-70">.dev</span></span>
         </div>
       </div>
     </SidebarHeader>
@@ -152,6 +152,13 @@
     <SidebarRail />
   </Sidebar>
 </template>
+
+<script lang="ts">
+// Add default export to make the component importable
+export default {
+  name: 'AppSidebar'
+}
+</script>
 
 <script setup lang="ts">
 import { ref, onMounted, reactive, watch } from 'vue'

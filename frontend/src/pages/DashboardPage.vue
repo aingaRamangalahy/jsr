@@ -22,9 +22,9 @@
 
     <!-- Dashboard Tabs -->
     <Tabs v-model="activeTab" default-value="bookmarks" class="w-full">
-      <TabsList class="grid w-full max-w-md grid-cols-2">
-        <TabsTrigger value="bookmarks">Bookmarked Resources</TabsTrigger>
-        <TabsTrigger value="submitted">Submitted Resources</TabsTrigger>
+      <TabsList class="grid w-full grid-cols-2 mb-6">
+        <TabsTrigger value="bookmarks" class="py-3 text-base">Bookmarked Resources</TabsTrigger>
+        <TabsTrigger value="submitted" class="py-3 text-base">Submitted Resources</TabsTrigger>
       </TabsList>
 
       <!-- Loading State -->
@@ -51,9 +51,9 @@
       </div>
 
       <!-- Bookmarks Tab Content -->
-      <TabsContent value="bookmarks" class="space-y-6">
+      <TabsContent value="bookmarks" class="space-y-6 w-full">
         <!-- Pricing Filters -->
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-4 bg-card p-4 rounded-lg border shadow-sm">
           <span class="text-sm font-medium">Filter:</span>
           <Button 
             @click="pricingFilter = 'all'"
@@ -109,9 +109,9 @@
       </TabsContent>
 
       <!-- Submitted Resources Tab Content -->
-      <TabsContent value="submitted" class="space-y-6">
+      <TabsContent value="submitted" class="space-y-6 w-full">
         <!-- Status Filters -->
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-4 bg-card p-4 rounded-lg border shadow-sm">
           <span class="text-sm font-medium">Filter:</span>
           <Button 
             @click="statusFilter = 'all'"
@@ -193,10 +193,10 @@ import { useAuthStore } from '@/stores/auth.store';
 import { interactionService } from '@/services/interaction.service';
 import { ResourceStatus, PricingType, Resource, Bookmark } from '@jsr/shared/types';
 import { toast } from 'vue-sonner';
-import ResourceCard from '@/components/ResourceCard.vue';
 import { resourceService } from '@/services/resource.service';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import ResourceCard from '@/components/ResourceCard.vue';
 
 // Auth store for user info
 const authStore = useAuthStore();

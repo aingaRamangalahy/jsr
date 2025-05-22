@@ -9,7 +9,8 @@ import {
   getPaidResources,
   updateResource,
   updateResourcePricing,
-  getUserSubmittedResources
+  getUserSubmittedResources,
+  prefetchResources
 } from '../controllers/resource.controller';
 import { protect, restrictTo } from '../middleware/auth';
 
@@ -19,6 +20,7 @@ const router: Router = express.Router();
 router.get('/', getResources);
 router.get('/free', getFreeResources);
 router.get('/paid', getPaidResources);
+router.get('/prefetch', prefetchResources);
 router.get('/:id', getResourceById);
 
 // User routes (requires authentication)
