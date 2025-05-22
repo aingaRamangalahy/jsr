@@ -3,3 +3,6 @@ packages:
   - 'frontend'
   - 'admin'
   - 'shared' 
+syncInjectedDepsAfterScripts:
+- build
+injectWorkspacePackages: true
