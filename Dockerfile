@@ -28,10 +28,7 @@ COPY . .
 # Build shared package first
 RUN cd shared && pnpm build
 
-# Build each service separately
-RUN cd backend && pnpm build
-RUN cd frontend && pnpm build
-RUN cd admin && pnpm build
+RUN pnpm run -r build
 
 # Create optimized production deployment packages
 RUN pnpm deploy --filter=backend --prod /prod/backend
