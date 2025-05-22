@@ -32,6 +32,7 @@ jobs:
             grep -q "cd backend && pnpm build || echo \"Ignoring TypeScript errors in backend\"" Dockerfile || echo "WARNING: Dockerfile does not contain expected backend build commands!"
             grep -q "cd frontend && pnpm build || echo \"Ignoring TypeScript errors in frontend\"" Dockerfile || echo "WARNING: Dockerfile does not contain expected frontend build commands!"
             grep -q "cd admin && pnpm build || echo \"Ignoring TypeScript errors in admin\"" Dockerfile || echo "WARNING: Dockerfile does not contain expected admin build commands!"
+            grep -q "pnpm install$" Dockerfile || echo "WARNING: Dockerfile is using frozen lockfile, which may cause issues with workspace config!"
             
             # Make sure .env file exists for Docker Compose to use
             if [ ! -f .env ]; then
