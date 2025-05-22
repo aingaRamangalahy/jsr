@@ -29,23 +29,47 @@ jobs:
             # Make sure .env file exists for Docker Compose to use
             if [ ! -f .env ]; then
               echo "Creating .env file from template"
-              cp .env.production .env
+              cp env.example .env
+              
+              # Set required environment variables
+              sed -i "s|MONGODB_ATLAS_URI=.*|MONGODB_ATLAS_URI=${{ secrets.MONGODB_ATLAS_URI }}|g" .env
+              sed -i "s|JWT_SECRET=.*|JWT_SECRET=${{ secrets.JWT_SECRET }}|g" .env
+              sed -i "s|SUPABASE_URL=.*|SUPABASE_URL=${{ secrets.SUPABASE_URL }}|g" .env
+              sed -i "s|SUPABASE_ANON_KEY=.*|SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}|g" .env
+              sed -i "s|SUPABASE_SERVICE_ROLE_KEY=.*|SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}|g" .env
+              sed -i "s|API_URL=.*|API_URL=https://api.jsresources.dev|g" .env
+              sed -i "s|DOMAIN_NAME=.*|DOMAIN_NAME=jsresources.dev|g" .env
+              sed -i "s|ADMIN_EMAIL=.*|ADMIN_EMAIL=${{ secrets.ADMIN_EMAIL }}|g" .env
+              sed -i "s|NODE_ENV=.*|NODE_ENV=production|g" .env
             else
               # Update the .env file with the latest production values
               echo "Updating existing .env file with production values"
-              # Ensure Atlas MongoDB URI is set correctly
-              grep -q "MONGODB_ATLAS_URI" .env || echo "MONGODB_ATLAS_URI=${{ secrets.MONGODB_ATLAS_URI }}" >> .env
-              # Update the value if it already exists
-              sed -i "s|^MONGODB_ATLAS_URI=.*|MONGODB_ATLAS_URI=${{ secrets.MONGODB_ATLAS_URI }}|g" .env
+              # Update MongoDB Atlas URI
+              sed -i "s|MONGODB_ATLAS_URI=.*|MONGODB_ATLAS_URI=${{ secrets.MONGODB_ATLAS_URI }}|g" .env
+              # Update other sensitive environment variables
+              sed -i "s|JWT_SECRET=.*|JWT_SECRET=${{ secrets.JWT_SECRET }}|g" .env
+              sed -i "s|SUPABASE_URL=.*|SUPABASE_URL=${{ secrets.SUPABASE_URL }}|g" .env
+              sed -i "s|SUPABASE_ANON_KEY=.*|SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}|g" .env
+              sed -i "s|SUPABASE_SERVICE_ROLE_KEY=.*|SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}|g" .env
+              sed -i "s|NODE_ENV=.*|NODE_ENV=production|g" .env
             fi
             
+            # Make sure the update-nginx-config script is executable
+            chmod +x scripts/update-nginx-config.sh
+            
             # Build and start services
-            docker compose down
-            docker compose build --no-cache
-            docker compose --env-file .env up -d
+            docker compose -f docker-compose.prod.yml down
+            docker compose -f docker-compose.prod.yml build --no-cache
+            docker compose -f docker-compose.prod.yml up -d
             
             # Clean up unused Docker resources
             docker system prune -af --volumes
+            
+            # Update Nginx configuration if needed (requires sudo access for the user)
+            if [ -f nginx-host-config.conf ] && [ -x "$(command -v sudo)" ]; then
+              echo "Updating Nginx configuration..."
+              sudo scripts/update-nginx-config.sh
+            fi
             
             # Final disk space check
             echo "Final disk space:"
