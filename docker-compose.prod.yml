@@ -1,0 +1,82 @@
+services:
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: jsr-backend
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MONGODB_URI=${MONGODB_ATLAS_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+    networks:
+      - jsr-network
+    # No direct port exposure in production, accessed via Nginx
+
+  # Frontend client
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: jsr-frontend
+    restart: always
+    environment:
+      - NODE_ENV=production
+    networks:
+      - jsr-network
+    # No direct port exposure in production, accessed via Nginx
+
+  # Admin dashboard
+  admin:
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    container_name: jsr-admin
+    restart: always
+    environment:
+      - NODE_ENV=production
+    networks:
+      - jsr-network
+    # No direct port exposure in production, accessed via Nginx
+
+  # Nginx reverse proxy with SSL
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: jsr-nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+      - frontend
+      - admin
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    networks:
+      - jsr-network
+
+  # Certbot service for SSL certificates
+  certbot:
+    image: certbot/certbot
+    container_name: jsr-certbot
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    command: certonly --webroot --webroot-path=/var/www/certbot --email ${ADMIN_EMAIL} --agree-tos --no-eff-email -d ${DOMAIN_NAME} -d www.${DOMAIN_NAME}
+    depends_on:
+      - nginx
+
+networks:
+  jsr-network:
+    driver: bridge
+
+volumes:
+  mongodb_data: 
