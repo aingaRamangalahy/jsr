@@ -5,18 +5,31 @@ RUN corepack enable
 
 FROM base AS build
 WORKDIR /app
-COPY pnpm-lock.yaml ./
-# First fetch dependencies to leverage Docker layer caching
+
+# Copy package.json files first to optimize layer caching
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY shared/package.json ./shared/
+COPY backend/package.json ./backend/
+COPY frontend/package.json ./frontend/
+COPY admin/package.json ./admin/
+
+# Fetch dependencies to leverage Docker layer caching
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm fetch
 
-# Copy source code
+# Install dependencies only (without source code) - this allows Docker to cache this layer
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+
+# Copy all source code
 COPY . .
 
-# Install dependencies and build all packages
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
-RUN pnpm run -r build
+# Build shared package first
+RUN cd shared && pnpm build
+
+# Build all remaining packages
+RUN pnpm run -r --filter=!shared build
 
 # Deploy only production dependencies for each service
+# Include shared package in each deployment
 RUN pnpm deploy --filter=backend --prod /prod/backend
 RUN pnpm deploy --filter=frontend --prod /prod/frontend
 RUN pnpm deploy --filter=admin --prod /prod/admin

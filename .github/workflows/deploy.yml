@@ -69,24 +69,52 @@ jobs:
             # Clean up unused Docker resources
             docker system prune -af --volumes
             
-            # Update Nginx configuration if needed
-            if [ -f nginx-host-config.conf ] && [ -x "$(command -v sudo)" ]; then
-              echo "Updating Nginx configuration..."
-              sudo cp nginx-host-config.conf /etc/nginx/sites-available/jsresources
+            # Update Nginx configuration if needed - handle without sudo password prompts
+            if [ -f nginx-host-config.conf ]; then
+              echo "Nginx configuration found. Creating deployment script..."
               
-              if [ ! -f /etc/nginx/sites-enabled/jsresources ]; then
-                sudo ln -s /etc/nginx/sites-available/jsresources /etc/nginx/sites-enabled/
+              # Create update_nginx.sh script line by line
+              echo '#!/bin/bash' > update_nginx.sh
+              echo '# Nginx configuration update script' >> update_nginx.sh
+              echo 'cp nginx-host-config.conf /etc/nginx/sites-available/jsresources' >> update_nginx.sh
+              echo '' >> update_nginx.sh
+              echo 'if [ ! -f /etc/nginx/sites-enabled/jsresources ]; then' >> update_nginx.sh
+              echo '  ln -s /etc/nginx/sites-available/jsresources /etc/nginx/sites-enabled/' >> update_nginx.sh
+              echo 'fi' >> update_nginx.sh
+              echo '' >> update_nginx.sh
+              echo 'if [ -f /etc/nginx/sites-enabled/default ]; then' >> update_nginx.sh
+              echo '  rm /etc/nginx/sites-enabled/default' >> update_nginx.sh
+              echo 'fi' >> update_nginx.sh
+              echo '' >> update_nginx.sh
+              echo 'if ! certbot certificates | grep -q "admin.jsresources.dev"; then' >> update_nginx.sh
+              echo '  certbot --nginx -d jsresources.dev -d api.jsresources.dev -d admin.jsresources.dev --non-interactive --agree-tos' >> update_nginx.sh
+              echo 'fi' >> update_nginx.sh
+              echo '' >> update_nginx.sh
+              echo 'systemctl reload nginx' >> update_nginx.sh
+              
+              chmod +x update_nginx.sh
+              
+              # Try to use passwordless sudo if it's configured
+              echo "Attempting to update Nginx with passwordless sudo..."
+              if sudo -n true 2>/dev/null; then
+                # Passwordless sudo is available, try to run the script
+                echo "Passwordless sudo is available, updating Nginx configuration..."
+                sudo ./update_nginx.sh && echo "Nginx configuration updated successfully!" || echo "Failed to update Nginx configuration with sudo."
+              else
+                # Passwordless sudo is not available, provide instructions
+                echo "======================================================"
+                echo "NGINX CONFIGURATION UPDATE REQUIRED"
+                echo "======================================================"
+                echo "Please run the following command manually with sudo privileges:"
+                echo "sudo ./update_nginx.sh"
+                echo ""
+                echo "To enable automatic updates in future deployments, set up passwordless sudo for these specific commands:"
+                echo ""
+                echo "Run: sudo visudo"
+                echo "Add the following line (replace username with your username):"
+                echo "username ALL=(ALL) NOPASSWD: /bin/cp */nginx-host-config.conf /etc/nginx/sites-available/jsresources, /bin/ln -s /etc/nginx/sites-available/jsresources /etc/nginx/sites-enabled/, /bin/rm /etc/nginx/sites-enabled/default, /usr/bin/certbot, /bin/systemctl reload nginx"
+                echo "======================================================"
               fi
-              
-              if [ -f /etc/nginx/sites-enabled/default ]; then
-                sudo rm /etc/nginx/sites-enabled/default
-              fi
-              
-              if ! sudo certbot certificates | grep -q "admin.jsresources.dev"; then
-                sudo certbot --nginx -d jsresources.dev -d api.jsresources.dev -d admin.jsresources.dev
-              fi
-              
-              sudo systemctl reload nginx
             fi
             
             # Final disk space check

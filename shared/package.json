@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "description": "Shared code for JSR applications",
   "private": true,
-  "main": "index.js",
-  "types": "index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit"
