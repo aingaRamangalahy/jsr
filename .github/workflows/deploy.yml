@@ -60,37 +60,26 @@ jobs:
               cp admin/nginx.conf.template admin/nginx.conf
             fi
             
-            # Build and start services with BuildKit enabled and resource limits
-            export DOCKER_BUILDKIT=1
-            
-            # Set resource limits for Docker builds
-            export DOCKER_MEMORY_LIMIT="768m"
-            export DOCKER_CPU_LIMIT="0.8"
-            
+            # Free up resources before building
             echo "Stopping previous containers to free resources..."
             docker compose -f docker-compose.prod.yml down
             
-            # Clean up unused Docker resources before building
+            # Clean up unused Docker resources
             echo "Cleaning up Docker resources to free space..."
             docker system prune -af --volumes
             
+            # Enable BuildKit for more efficient builds
+            echo "Setting up Docker BuildKit..."
+            export DOCKER_BUILDKIT=1
+            
+            # Define memory constraints for Docker build
             echo "Building containers with resource constraints..."
-            # Build containers one at a time to reduce memory pressure
-            # Pass --build-arg to set environment variables in the Dockerfile
-            docker compose -f docker-compose.prod.yml build --no-cache --memory=${DOCKER_MEMORY_LIMIT} \
-              --build-arg NODE_OPTIONS="--max-old-space-size=512" \
-              --build-arg PNPM_NETWORK_CONCURRENCY=1 \
-              backend
-              
-            docker compose -f docker-compose.prod.yml build --no-cache --memory=${DOCKER_MEMORY_LIMIT} \
-              --build-arg NODE_OPTIONS="--max-old-space-size=512" \
-              --build-arg PNPM_NETWORK_CONCURRENCY=1 \
-              frontend
-              
-            docker compose -f docker-compose.prod.yml build --no-cache --memory=${DOCKER_MEMORY_LIMIT} \
-              --build-arg NODE_OPTIONS="--max-old-space-size=512" \
-              --build-arg PNPM_NETWORK_CONCURRENCY=1 \
-              admin
+            export DOCKER_DEFAULT_PLATFORM=linux/amd64
+            
+            # Build the full stack at once with optimized settings
+            docker compose -f docker-compose.prod.yml build \
+              --build-arg BUILDKIT_INLINE_CACHE=1 \
+              --progress=plain
             
             echo "Starting all containers..."
             docker compose -f docker-compose.prod.yml up -d
