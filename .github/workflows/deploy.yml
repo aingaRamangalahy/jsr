@@ -61,6 +61,10 @@ jobs:
             echo "Setting up monorepo structure..."
             ./scripts/setup-monorepo.sh
             
+            # Run the check files script to ensure required files exist
+            echo "Checking required files..."
+            ./scripts/check-files.sh
+            
             # Build and start services
             docker compose -f docker-compose.prod.yml down
             docker compose -f docker-compose.prod.yml build --no-cache

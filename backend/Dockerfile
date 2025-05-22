@@ -8,7 +8,6 @@ RUN npm install -g pnpm
 # Copy package files for dependency installation
 COPY package.json ./
 COPY tsconfig.json ./
-COPY tsconfig.node.json ./
 
 # The shared directory will be mounted as a volume at runtime
 # Don't try to copy it during build
