@@ -47,12 +47,17 @@ RUN VITE_API_URL=${VITE_API_URL} \
     echo ">>> vite build completed." && \
     echo ">>> Frontend build finished successfully." \
     ' || echo "ERROR: Frontend build script failed."
+RUN echo "Listing /app/frontend contents after build:" && ls -la /app/frontend
 RUN cd admin && pnpm build || echo "Ignoring TypeScript errors in admin"
 
 # Create optimized production deployment packages
 RUN pnpm deploy --filter=backend --prod /prod/backend
+RUN echo "Listing /prod contents after backend deploy:" && ls -la /prod && ls -la /prod/backend
 RUN pnpm deploy --filter=frontend --prod /prod/frontend
+RUN echo "Listing /prod contents after frontend deploy:" && ls -la /prod && ls -la /prod/frontend
 RUN pnpm deploy --filter=admin --prod /prod/admin
+RUN echo "Listing /prod contents after admin deploy:" && ls -la /prod && ls -la /prod/admin
+RUN echo "Final listing of /app and /prod in build stage:" && ls -la /app && ls -la /prod
 
 # Backend stage
 FROM base AS backend
