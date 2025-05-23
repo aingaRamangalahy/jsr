@@ -34,9 +34,9 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
-      - VITE_API_URL=${API_URL}
-      - VITE_SUPABASE_URL=${SUPABASE_URL}
-      - VITE_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - VITE_API_URL=${VITE_API_URL}
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
     ports:
       - "127.0.0.1:3001:80"
     networks:
