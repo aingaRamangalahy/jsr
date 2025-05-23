@@ -40,7 +40,7 @@ RUN VITE_API_URL=${VITE_API_URL} \
     echo ">>> Starting frontend build in /app/frontend..." && \
     cd frontend && \
     echo ">>> Running vue-tsc..." && \
-    pnpm exec vue-tsc --skipLibCheck --noEmitOnError false && \
+    pnpm exec vue-tsc --noEmit --skipLibCheck && \
     echo ">>> vue-tsc completed." && \
     echo ">>> Running vite build..." && \
     pnpm exec vite build && \
