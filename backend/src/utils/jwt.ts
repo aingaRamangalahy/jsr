@@ -20,9 +20,9 @@ export interface UserPayload {
  */
 export const generateToken = (payload: UserPayload): string => {
   return jwt.sign(
-    payload, 
-    JWT_SECRET as jwt.Secret, 
-    { expiresIn: JWT_EXPIRES_IN }
+    payload,
+    JWT_SECRET as any,
+    { expiresIn: JWT_EXPIRES_IN  as any }
   );
 };
 

@@ -7,7 +7,7 @@
     </TooltipProvider>
     <Toaster />
     <AuthModal 
-      :showModal="authState.isAuthModalOpen" 
+      :showModal="authState.isAuthModalOpen.value" 
       @close="authState.closeAuthModal"
     />
   </div>

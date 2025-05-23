@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { type Component, computed } from 'vue'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import SidebarMenuButtonChild, { type SidebarMenuButtonProps } from './SidebarMenuButtonChild.vue'
 import { useSidebar } from './utils'
 
@@ -18,20 +18,35 @@ const props = withDefaults(defineProps<SidebarMenuButtonProps & {
 
 const { isMobile, state } = useSidebar()
 
-const delegatedProps = computed(() => {
-  const { tooltip, ...delegated } = props
-  return delegated
-})
+const typedAs = computed(() => props.as as any)
 </script>
 
 <template>
-  <SidebarMenuButtonChild v-if="!tooltip" v-bind="{ ...delegatedProps, ...$attrs }">
-    <slot />
-  </SidebarMenuButtonChild>
+  <template v-if="!tooltip">
+    <SidebarMenuButtonChild
+      :as="typedAs"
+      :variant="props.variant"
+      :size="props.size"
+      :isActive="props.isActive"
+      :class="props.class"
+      :asChild="props.asChild"
+      v-bind="$attrs"
+    >
+      <slot />
+    </SidebarMenuButtonChild>
+  </template>
 
   <Tooltip v-else>
     <TooltipTrigger as-child>
-      <SidebarMenuButtonChild v-bind="{ ...delegatedProps, ...$attrs }">
+      <SidebarMenuButtonChild
+        :as="typedAs"
+        :variant="props.variant"
+        :size="props.size"
+        :isActive="props.isActive"
+        :class="props.class"
+        :asChild="props.asChild"
+        v-bind="$attrs"
+      >
         <slot />
       </SidebarMenuButtonChild>
     </TooltipTrigger>

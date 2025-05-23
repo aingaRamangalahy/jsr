@@ -144,9 +144,14 @@ const fetchResourcesWithPagination = async (
     total,
     pages: Math.ceil(total / Number(limit))
   };
-  
   // Convert resources to plain objects for easier manipulation
-  const resourceObjects: ResourceWithUserInteractions[] = resources.map(resource => resource.toObject());
+  const resourceObjects = resources.map(resource => {
+    const obj = resource.toObject();
+    return {
+      ...obj,
+      commentCount: 0 // Initialize with default value
+    } as ResourceWithUserInteractions;
+  });
   
   // Fetch comment counts for all resources in one query
   const resourceIds = resources.map(resource => resource._id);
@@ -258,9 +263,8 @@ export const getResourceById = async (req: Request, res: Response): Promise<void
       });
       return;
     }
-    
     // Convert to plain object for manipulation
-    const resourceObject: ResourceWithUserInteractions = resource.toObject();
+    const resourceObject: any = resource.toObject();
     
     // Get comment count
     const commentCount = await CommentModel.countDocuments({ resourceId: id });

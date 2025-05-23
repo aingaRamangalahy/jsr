@@ -31,24 +31,14 @@ COPY . .
 # Build shared package first since others depend on it
 RUN cd shared && pnpm build
 # Then build the application packages
-RUN cd backend && pnpm build || echo "Ignoring TypeScript errors in backend"
+RUN cd backend && pnpm build
 # For frontend build, inject VITE_ env vars directly into the command's environment
 RUN VITE_API_URL=${VITE_API_URL} \
     VITE_SUPABASE_URL=${VITE_SUPABASE_URL} \
     VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY} \
-    sh -c '\
-    echo ">>> Starting frontend build in /app/frontend..." && \
-    cd frontend && \
-    echo ">>> Running vue-tsc..." && \
-    pnpm exec vue-tsc --noEmit --skipLibCheck && \
-    echo ">>> vue-tsc completed." && \
-    echo ">>> Running vite build..." && \
-    pnpm exec vite build && \
-    echo ">>> vite build completed." && \
-    echo ">>> Frontend build finished successfully." \
-    ' || echo "ERROR: Frontend build script failed."
+    sh -c 'cd frontend && pnpm build'
 RUN echo "Listing /app/frontend contents after build:" && ls -la /app/frontend
-RUN cd admin && pnpm build || echo "Ignoring TypeScript errors in admin"
+RUN cd admin && pnpm build
 
 # Create optimized production deployment packages
 RUN pnpm deploy --filter=backend --prod /prod/backend

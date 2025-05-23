@@ -28,7 +28,7 @@ export const getPreview = async (url: string): Promise<ILinkMetadata> => {
             images: 'images' in data ? data.images : [],
             favicon: data.favicons[0],
         };
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching metadata:', error.message);
         return {
             url,
