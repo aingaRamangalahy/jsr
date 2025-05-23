@@ -9,9 +9,8 @@ nginx/
 scripts/
 certbot/
 **/.DS_Store
-# Don't ignore dist directories because we need to copy them during deployment
-# **/dist
-# **/build
+**/dist
+**/build
 **/.cache
 **/.turbo
 .vscode

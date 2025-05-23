@@ -36,7 +36,17 @@ RUN cd backend && pnpm build || echo "Ignoring TypeScript errors in backend"
 RUN VITE_API_URL=${VITE_API_URL} \
     VITE_SUPABASE_URL=${VITE_SUPABASE_URL} \
     VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY} \
-    sh -c 'cd frontend && pnpm build' || echo "Ignoring TypeScript errors in frontend"
+    sh -c '\
+    echo ">>> Starting frontend build in /app/frontend..." && \
+    cd frontend && \
+    echo ">>> Running vue-tsc..." && \
+    pnpm exec vue-tsc --skipLibCheck --noEmitOnError false && \
+    echo ">>> vue-tsc completed." && \
+    echo ">>> Running vite build..." && \
+    pnpm exec vite build && \
+    echo ">>> vite build completed." && \
+    echo ">>> Frontend build finished successfully." \
+    ' || echo "ERROR: Frontend build script failed."
 RUN cd admin && pnpm build || echo "Ignoring TypeScript errors in admin"
 
 # Create optimized production deployment packages
