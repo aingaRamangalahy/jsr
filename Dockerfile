@@ -8,6 +8,16 @@ RUN corepack enable
 FROM base AS build
 WORKDIR /app
 
+# Accept build arguments for frontend environment variables
+ARG VITE_API_URL
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_ANON_KEY
+
+# Set environment variables for the build process so pnpm build can access them
+ENV VITE_API_URL=${VITE_API_URL}
+ENV VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+ENV VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+
 # Copy all source files
 COPY . .
 
