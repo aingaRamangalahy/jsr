@@ -13,11 +13,19 @@ ARG VITE_API_URL
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
 
-# Copy all source files
-COPY . .
+# Copy package manager files and workspace package.json files first
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY shared/package.json ./shared/
+COPY backend/package.json ./backend/
+COPY frontend/package.json ./frontend/
+COPY admin/package.json ./admin/
 
-# Install dependencies without frozen-lockfile to handle workspace config changes
+# Install dependencies
+# This layer is cached as long as the package files don't change
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install
+
+# Now copy the rest of the source code
+COPY . .
 
 # Build all packages, with fallbacks for TypeScript errors
 # Build shared package first since others depend on it

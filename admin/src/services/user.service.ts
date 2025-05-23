@@ -15,31 +15,31 @@ export interface User {
 export const userService = {
   // Get all users
   async getUsers(): Promise<ApiResponse<User[]>> {
-    const response = await api.get('/api/v1/admin/users')
+    const response = await api.get('/admin/users')
     return response.data
   },
 
   // Get a single user by ID
   async getUserById(id: string): Promise<ApiResponse<User>> {
-    const response = await api.get(`/api/v1/admin/users/${id}`)
+    const response = await api.get(`/admin/users/${id}`)
     return response.data
   },
 
   // Create a new user
   async createUser(userData: Partial<User>): Promise<ApiResponse<User>> {
-    const response = await api.post('/api/v1/admin/users', userData)
+    const response = await api.post('/admin/users', userData)
     return response.data
   },
 
   // Update a user
   async updateUser(id: string, userData: Partial<User>): Promise<ApiResponse<User>> {
-    const response = await api.put(`/api/v1/admin/users/${id}`, userData)
+    const response = await api.put(`/admin/users/${id}`, userData)
     return response.data
   },
 
   // Delete a user
   async deleteUser(id: string): Promise<ApiResponse<null>> {
-    const response = await api.delete(`/api/v1/admin/users/${id}`)
+    const response = await api.delete(`/admin/users/${id}`)
     return response.data
   }
 }

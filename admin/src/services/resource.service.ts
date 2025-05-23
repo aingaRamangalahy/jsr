@@ -29,37 +29,37 @@ export const resourceService = {
   // Get all resources with optional filtering
   async getResources(filters: ResourceFilters = {}, page = 1, limit = 10): Promise<PaginatedResponse<Resource>> {
     const params = { page, limit, ...filters }
-    const response = await api.get('/api/v1/resources/admin/all', { params })
+    const response = await api.get('/resources/admin/all', { params })
     return response.data
   },
 
   // Get a single resource by ID
   async getResourceById(id: string): Promise<ApiResponse<Resource>> {
-    const response = await api.get(`/api/v1/resources/admin/${id}`)
+    const response = await api.get(`/resources/admin/${id}`)
     return response.data
   },
 
   // Create a new resource
   async createResource(data: ResourceData): Promise<ApiResponse<Resource>> {
-    const response = await api.post('/api/v1/resources/admin', data)
+    const response = await api.post('/resources/admin', data)
     return response.data
   },
 
   // Update an existing resource
   async updateResource(id: string, data: ResourceData): Promise<ApiResponse<Resource>> {
-    const response = await api.put(`/api/v1/resources/admin/${id}`, data)
+    const response = await api.put(`/resources/admin/${id}`, data)
     return response.data
   },
 
   // Update resource status (approve/reject)
   async updateResourceStatus(id: string, status: ResourceStatus): Promise<ApiResponse<Resource>> {
-    const response = await api.put(`/api/v1/resources/admin/${id}/status`, { status })
+    const response = await api.put(`/resources/admin/${id}/status`, { status })
     return response.data
   },
 
   // Update resource pricing information
   async updateResourcePricing(id: string, pricingType: 'free' | 'paid', price?: number): Promise<ApiResponse<Resource>> {
-    const response = await api.put(`/api/v1/resources/admin/${id}/pricing`, { 
+    const response = await api.put(`/resources/admin/${id}/pricing`, { 
       pricingType, 
       price: pricingType === 'paid' ? price : undefined 
     })
