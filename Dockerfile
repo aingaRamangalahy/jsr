@@ -13,11 +13,6 @@ ARG VITE_API_URL
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
 
-# Set environment variables for the build process so pnpm build can access them
-ENV VITE_API_URL=${VITE_API_URL}
-ENV VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
-ENV VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
-
 # Copy all source files
 COPY . .
 
@@ -29,7 +24,11 @@ RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install
 RUN cd shared && pnpm build
 # Then build the application packages
 RUN cd backend && pnpm build || echo "Ignoring TypeScript errors in backend"
-RUN cd frontend && pnpm build || echo "Ignoring TypeScript errors in frontend"
+# For frontend build, inject VITE_ env vars directly into the command's environment
+RUN VITE_API_URL=${VITE_API_URL} \
+    VITE_SUPABASE_URL=${VITE_SUPABASE_URL} \
+    VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY} \
+    sh -c 'cd frontend && pnpm build' || echo "Ignoring TypeScript errors in frontend"
 RUN cd admin && pnpm build || echo "Ignoring TypeScript errors in admin"
 
 # Create optimized production deployment packages
