@@ -57,10 +57,13 @@ services:
       context: .
       dockerfile: Dockerfile
       target: admin
+      args:
+        - VITE_API_URL=${API_URL}
     container_name: jsr-admin
     restart: always
     environment:
       - NODE_ENV=production
+      - VITE_API_URL=${API_URL}
     ports:
       - "127.0.0.1:3002:80"
     networks:

@@ -38,7 +38,8 @@ RUN VITE_API_URL=${VITE_API_URL} \
     VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY} \
     sh -c 'cd frontend && pnpm build'
 RUN echo "Listing /app/frontend contents after build:" && ls -la /app/frontend
-RUN cd admin && pnpm build
+RUN VITE_API_URL=${VITE_API_URL} \
+    sh -c 'cd admin && pnpm build'
 
 # Create optimized production deployment packages
 RUN pnpm deploy --filter=backend --prod /prod/backend
