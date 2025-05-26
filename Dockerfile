@@ -37,18 +37,14 @@ RUN VITE_API_URL=${VITE_API_URL} \
     VITE_SUPABASE_URL=${VITE_SUPABASE_URL} \
     VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY} \
     sh -c 'cd frontend && pnpm build'
-RUN echo "Listing /app/frontend contents after build:" && ls -la /app/frontend
+
 RUN VITE_API_URL=${VITE_API_URL} \
     sh -c 'cd admin && pnpm build'
 
 # Create optimized production deployment packages
 RUN pnpm deploy --filter=backend --prod /prod/backend
-RUN echo "Listing /prod contents after backend deploy:" && ls -la /prod && ls -la /prod/backend
 RUN pnpm deploy --filter=frontend --prod /prod/frontend
-RUN echo "Listing /prod contents after frontend deploy:" && ls -la /prod && ls -la /prod/frontend
 RUN pnpm deploy --filter=admin --prod /prod/admin
-RUN echo "Listing /prod contents after admin deploy:" && ls -la /prod && ls -la /prod/admin
-RUN echo "Final listing of /app and /prod in build stage:" && ls -la /app && ls -la /prod
 
 # Backend stage
 FROM base AS backend
