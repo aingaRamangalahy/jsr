@@ -29,11 +29,18 @@ api.interceptors.response.use(
   (error) => {
     // Handle 401 Unauthorized globally
     if (error.response && error.response.status === 401) {
-      localStorage.removeItem('adminToken')
-      localStorage.removeItem('adminName')
-      window.location.href = '/login'
+      // Only redirect if the 401 is NOT from the login attempt itself
+      if (error.config.url !== '/auth/admin/login') {
+        console.log('Unauthorized (session expired/invalid), redirecting to login:', error.response);
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminName');
+        window.location.href = '/login';
+      } else {
+        // If 401 is from login, let authStore handle the error message display
+        console.log('Unauthorized (login failed):', error.response);
+      }
     }
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
 )
 
