@@ -6,6 +6,7 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue(), tailwindcss()],
+  publicDir: resolve(__dirname, '../shared/assets'),
   server: {
     port: 3001
   },
