@@ -27,23 +27,6 @@ jobs:
             git fetch origin
             git reset --hard origin/master
             
-            echo "Ensuring we have the latest code..."
-            # Verify Dockerfile has the correct content with error handling for all services
-            grep -q "cd backend && pnpm build || echo \"Ignoring TypeScript errors in backend\"" Dockerfile || echo "WARNING: Dockerfile does not contain expected backend build commands!"
-            grep -q "cd frontend && pnpm build || echo \"Ignoring TypeScript errors in frontend\"" Dockerfile || echo "WARNING: Dockerfile does not contain expected frontend build commands!"
-            grep -q "cd admin && pnpm build || echo \"Ignoring TypeScript errors in admin\"" Dockerfile || echo "WARNING: Dockerfile does not contain expected admin build commands!"
-            grep -q "pnpm install$" Dockerfile || echo "WARNING: Dockerfile is using frozen lockfile, which may cause issues with workspace config!"
-            
-            
-            # Create Nginx config files if they don't exist
-            if [ ! -f "frontend/nginx.conf" ] && [ -f "frontend/nginx.conf.template" ]; then
-              cp frontend/nginx.conf.template frontend/nginx.conf
-            fi
-
-            if [ ! -f "admin/nginx.conf" ] && [ -f "admin/nginx.conf.template" ]; then
-              cp admin/nginx.conf.template admin/nginx.conf
-            fi
-            
             # Free up resources before building
             echo "Stopping previous containers to free resources..."
             docker compose -f docker-compose.prod.yml down
@@ -65,56 +48,7 @@ jobs:
             
             echo "Starting all containers..."
             docker compose -f docker-compose.prod.yml up -d
-            
-            # Update Nginx configuration if needed - handle without sudo password prompts
-            if [ -f nginx-host-config.conf ]; then
-              echo "Nginx configuration found. Creating deployment script..."
-              
-              # Create update_nginx.sh script line by line
-              echo '#!/bin/bash' > update_nginx.sh
-              echo '# Nginx configuration update script' >> update_nginx.sh
-              echo 'cp nginx-host-config.conf /etc/nginx/sites-available/jsresources' >> update_nginx.sh
-              echo '' >> update_nginx.sh
-              echo 'if [ ! -f /etc/nginx/sites-enabled/jsresources ]; then' >> update_nginx.sh
-              echo '  ln -s /etc/nginx/sites-available/jsresources /etc/nginx/sites-enabled/' >> update_nginx.sh
-              echo 'fi' >> update_nginx.sh
-              echo '' >> update_nginx.sh
-              echo 'if [ -f /etc/nginx/sites-enabled/default ]; then' >> update_nginx.sh
-              echo '  rm /etc/nginx/sites-enabled/default' >> update_nginx.sh
-              echo 'fi' >> update_nginx.sh
-              echo '' >> update_nginx.sh
-              echo 'if ! certbot certificates | grep -q "admin.jsresources.dev"; then' >> update_nginx.sh
-              echo '  # Use --expand flag to add new domains to existing certificate' >> update_nginx.sh
-              echo '  certbot --nginx --expand --non-interactive --agree-tos -d jsresources.dev -d api.jsresources.dev -d admin.jsresources.dev' >> update_nginx.sh
-              echo 'fi' >> update_nginx.sh
-              echo '' >> update_nginx.sh
-              echo 'systemctl reload nginx' >> update_nginx.sh
-              
-              chmod +x update_nginx.sh
-              
-              # Try to use passwordless sudo if it's configured
-              echo "Attempting to update Nginx with passwordless sudo..."
-              if sudo -n true 2>/dev/null; then
-                # Passwordless sudo is available, try to run the script
-                echo "Passwordless sudo is available, updating Nginx configuration..."
-                sudo ./update_nginx.sh && echo "Nginx configuration updated successfully!" || echo "Failed to update Nginx configuration with sudo."
-              else
-                # Passwordless sudo is not available, provide instructions
-                echo "======================================================"
-                echo "NGINX CONFIGURATION UPDATE REQUIRED"
-                echo "======================================================"
-                echo "Please run the following command manually with sudo privileges:"
-                echo "sudo ./update_nginx.sh"
-                echo ""
-                echo "To enable automatic updates in future deployments, set up passwordless sudo for these specific commands:"
-                echo ""
-                echo "Run: sudo visudo"
-                echo "Add the following line (replace username with your username):"
-                echo "username ALL=(ALL) NOPASSWD: /bin/cp */nginx-host-config.conf /etc/nginx/sites-available/jsresources, /bin/ln -s /etc/nginx/sites-available/jsresources /etc/nginx/sites-enabled/, /bin/rm /etc/nginx/sites-enabled/default, /usr/bin/certbot, /bin/systemctl reload nginx"
-                echo "======================================================"
-              fi
-            fi
-            
+
             # Final disk space check
             df -h /
           ENDSSH
