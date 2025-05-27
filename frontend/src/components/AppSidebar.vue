@@ -163,7 +163,7 @@ export default {
 <script setup lang="ts">
 import { ref, onMounted, reactive, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useResourceStore } from "@/stores/resource"
+import { useResourceStore } from "@/stores/resource.store"
 import { useAuthStore } from "@/stores/auth.store"
 import { categoryService } from "@/services/category.service"
 import type { Category } from "@jsr/shared/types"

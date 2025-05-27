@@ -92,7 +92,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import { useRouter } from "vue-router";
-import { useResourceStore } from "@/stores/resource";
+import { useResourceStore } from "@/stores/resource.store";
 import { useAuthStore } from "@/stores/auth.store";
 import ThemeToggle from "@/components/custom/ThemeToggle.vue";
 import AppSidebar from "@/components/AppSidebar.vue";

@@ -23,7 +23,7 @@ import { useAuth } from '@/composables/useAuth'
 import { onMounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { useInteractionsStore } from '@/stores/interactions.store'
-import { useResourceStore } from '@/stores/resource'
+import { useResourceStore } from '@/stores/resource.store'
 
 const authState = useAuth()
 const authStore = useAuthStore()

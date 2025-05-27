@@ -53,7 +53,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from "vue";
-import { useResourceStore } from "@/stores/resource";
+import { useResourceStore } from "@/stores/resource.store";
 import { useAuthStore } from "@/stores/auth.store";
 import { resourceService } from "@/services/resource.service";
 import { Input } from "@/components/ui/input";

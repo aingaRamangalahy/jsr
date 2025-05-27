@@ -34,7 +34,7 @@ const resourceSchema = new Schema<ResourceDocument>({
     type: String,
     required: [true, 'URL is required'],
     trim: true,
-    match: [/^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-=,%&?:+]*)*\/?$/, 'Please provide a valid URL']
+    match: [/^(https?:\/\/)?((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+([a-z0-9]{2,63}))(:[0-9]{1,5})?(\/[^\s#?]*)?(\?[^\s#]*)?(#[^\s]*)?$/, 'Please provide a valid URL']
   },
   category: {
     type: mongoose.Schema.Types.ObjectId,
@@ -100,12 +100,12 @@ const resourceSchema = new Schema<ResourceDocument>({
   imageUrl: {
     type: String,
     trim: true,
-    match: [/^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-=,%&?:+]*)*\/?$/, 'Please provide a valid image URL']
+    match: [/^(https?:\/\/)?((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+([a-z0-9]{2,63}))(:[0-9]{1,5})?(\/[^\s#?]*)?(\?[^\s#]*)?(#[^\s]*)?$/, 'Please provide a valid image URL']
   },
   providerIcon: {
     type: String,
     trim: true,
-    match: [/^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-=,%&?:+]*)*\/?$/, 'Please provide a valid icon URL']
+    match: [/^(https?:\/\/)?((?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+([a-z0-9]{2,63}))(:[0-9]{1,5})?(\/[^\s#?]*)?(\?[^\s#]*)?(#[^\s]*)?$/, 'Please provide a valid icon URL']
   },
   votes: {
     upvotes: {

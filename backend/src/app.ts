@@ -43,7 +43,7 @@ if (process.env.NODE_ENV !== 'test') {
   connectDB().then(() => {
     // Start server only after successful database connection
     app.listen(port, () => {
-      console.log(`Server running on port ${port}`);
+      console.log(`Server running`);
       console.log(`API documentation available at http://localhost:${port}/api-docs`);
     });
   }).catch((err: unknown) => {

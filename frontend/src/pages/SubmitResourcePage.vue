@@ -10,7 +10,7 @@
         </CardHeader>
         <CardContent>
           <!-- URL Prefetch Section -->
-          <div v-if="!prefetched" class="space-y-6">
+          <div v-if="!prefetched && !submissionSuccess" class="space-y-6">
             <div class="space-y-2">
               <label for="url" class="text-sm font-medium">Resource URL *</label>
               <div class="flex gap-2">
@@ -37,7 +37,7 @@
           </div>
 
           <!-- Resource Form Section -->
-          <form v-else @submit.prevent="handleSubmit" class="space-y-6">
+          <form v-else-if="prefetched && !submissionSuccess" @submit.prevent="handleSubmit" class="space-y-6">
             <!-- URL Preview -->
             <div class="rounded-md border p-4 space-y-3">
               <div class="flex items-center gap-3">
@@ -233,6 +233,22 @@
               {{ error }}
             </div>
           </form>
+
+          <!-- Submission Success Section -->
+          <div v-else-if="submissionSuccess && showSuccessMessage" class="space-y-6 text-center py-8">
+            <div class="flex justify-center mb-4">
+              <!-- You can use a nice checkmark icon here -->
+              <CheckCircle2Icon class="text-green-500 w-16 h-16" />
+            </div>
+            <h2 class="text-2xl font-semibold">Resource Submitted!</h2>
+            <p class="text-muted-foreground">
+              Your resource has been successfully submitted for review.
+            </p>
+            <div class="flex justify-center gap-4 pt-6">
+              <Button @click="goToDashboard" variant="outline">Go to Dashboard</Button>
+              <Button @click="submitAnother">Submit Another Resource</Button>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -264,13 +280,21 @@ import { resourceTypeService } from '@/services/resource-type.service'
 import { useAuthStore } from '@/stores/auth.store'
 import type { Resource, Category, ResourceType } from '@jsr/shared/types'
 import { toast } from 'vue-sonner'
-import ResourceCard from '@/components/ResourceCard.vue'
+import { defineAsyncComponent } from 'vue'
+import { CheckCircle2Icon } from 'lucide-vue-next'
+
+// Asynchronously load ResourceCard to potentially help with type inference issues
+const ResourceCard = defineAsyncComponent(() => import('@/components/ResourceCard.vue'))
 
 const router = useRouter()
 const authStore = useAuthStore()
 
 // Check authentication status
 const isAuthenticated = computed(() => authStore.isAuthenticated)
+
+// Success state
+const submissionSuccess = ref(false)
+const showSuccessMessage = ref(false)
 
 // URL for prefetching
 const resourceUrl = ref('')
@@ -509,7 +533,8 @@ const handleSubmit = async () => {
     await resourceService.submitResource(submissionResource as Resource)
     
     toast.success('Resource submitted successfully')
-    router.push('/resources')
+    submissionSuccess.value = true
+    showSuccessMessage.value = true
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to submit resource'
     toast.error(error.value)
@@ -523,4 +548,40 @@ const handleTagInput = (event: Event) => {
   const tags = input.value.split(',').map(tag => tag.trim()).filter(Boolean)
   resource.value.tags = tags
 }
+
+const submitAnother = () => {
+  submissionSuccess.value = false;
+  showSuccessMessage.value = false;
+  prefetched.value = false;
+  resourceUrl.value = '';
+  resource.value = {
+    name: '',
+    description: '',
+    url: '',
+    category: 'placeholder',
+    type: 'placeholder',
+    difficulty: 'beginner',
+    pricingType: 'free',
+    price: 0,
+    tags: [],
+    imageUrl: '',
+    providerIcon: ''
+  };
+  error.value = null;
+  prefetchError.value = null;
+  showPreview.value = false;
+};
+
+const goToDashboard = () => {
+  // Simplified check: if user exists, go to a general dashboard.
+  // TODO: Implement a more specific role check if needed, e.g., by adding an isAdmin getter to authStore.
+  if (authStore.isAuthenticated && authStore.user) { // Check isAuthenticated and user object
+    // Defaulting to a general '/dashboard'. Adjust if admin has a different path like '/admin/dashboard'
+    // and you have a way to check role e.g. authStore.isAdmin or authStore.user.role (if type is updated)
+    router.push('/dashboard'); 
+  } else {
+    // If not authenticated or user object is not available, redirect to home or login.
+    router.push('/'); 
+  }
+};
 </script> 

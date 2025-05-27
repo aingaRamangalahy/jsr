@@ -227,7 +227,7 @@ import { interactionService, CommentInput, VoteInput } from '@/services/interact
 import type { Comment, Category, User } from '@jsr/shared/types'
 import type { Resource } from '@/types'
 import { toast } from 'vue-sonner'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth.store'
 import { ThumbsUpIcon, ThumbsDownIcon, BookmarkIcon } from 'lucide-vue-next'
 
 // Custom Vote interface to match the structure in interaction service
