@@ -81,7 +81,7 @@ export const addComment = async (req: Request, res: Response): Promise<void> => 
 export const getResourceComments = async (req: Request, res: Response): Promise<void> => {
   try {
     const { resourceId } = req.params;
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 50 } = req.query;
     
     // Check if resource exists
     const resource = await ResourceModel.findById(resourceId);
@@ -277,7 +277,7 @@ export const getUserBookmarks = async (req: Request, res: Response): Promise<voi
     }
     
     const { pricingType } = req.query;
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 50 } = req.query;
     
     // Calculate pagination
     const skip = (Number(page) - 1) * Number(limit);

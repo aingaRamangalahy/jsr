@@ -1,10 +1,9 @@
 <template>
   <!-- Resources Grid -->
   <div class="px-6 py-4">
-    <div v-if="resourceStore.loading" class="text-center py-8">
-      <div
-        class="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
-      ></div>
+    <!-- Initial loading -->
+    <div v-if="resourceStore.loading && resourceStore.resources.length === 0" class="grid grid-cols-1 sm:grid-cols-auto-fit gap-6" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+      <ResourceCardSkeleton v-for="i in 6" :key="i" />
     </div>
 
     <div
@@ -33,26 +32,18 @@
       />
     </div>
 
-    <!-- Pagination -->
-    <div
-      v-if="resourceStore.totalPages > 1"
-      class="mt-8 flex justify-center gap-2"
-    >
-      <Button
-        v-for="page in resourceStore.totalPages"
-        :key="page"
-        :variant="page === resourceStore.currentPage ? 'default' : 'outline'"
-        size="sm"
-        @click="handlePageChange(page)"
-      >
-        {{ page }}
-      </Button>
+    <!-- Loading indicator for infinite scroll -->
+    <div v-if="isLoadingMore" class="grid grid-cols-1 sm:grid-cols-auto-fit gap-6 mt-6" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+      <ResourceCardSkeleton v-for="i in 3" :key="i" />
     </div>
+
+    <!-- Invisible element for intersection observer -->
+    <div ref="loadMoreTrigger" class="h-1 w-full" v-if="hasMorePages"></div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref, watch, nextTick, onUnmounted } from "vue";
 import { useResourceStore } from "@/stores/resource.store";
 import { useAuthStore } from "@/stores/auth.store";
 import { resourceService } from "@/services/resource.service";
@@ -61,6 +52,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import ResourceCard from "@/components/ResourceCard.vue";
+import ResourceCardSkeleton from "@/components/ResourceCardSkeleton.vue";
 import { toast } from "vue-sonner";
 import { useInteractionsStore } from '@/stores/interactions.store';
 import {
@@ -77,13 +69,81 @@ const authStore = useAuthStore();
 const interactionsStore = useInteractionsStore();
 const searchQuery = ref("");
 const selectedTab = ref("feed");
+const loadMoreTrigger = ref<HTMLElement | null>(null);
+const isLoadingMore = ref(false);
+const observer = ref<IntersectionObserver | null>(null);
 
-// Load resources on mount - interactions will be embedded if user is authenticated
+// Determine if there are more pages to load
+const hasMorePages = ref(false);
+
+// Setup intersection observer for infinite scrolling
+const setupIntersectionObserver = () => {
+  observer.value = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting && hasMorePages.value && !isLoadingMore.value) {
+        loadMoreResources();
+      }
+    },
+    { rootMargin: "200px" }
+  );
+
+  if (loadMoreTrigger.value) {
+    observer.value.observe(loadMoreTrigger.value);
+  }
+};
+
+// Load more resources when scrolling
+const loadMoreResources = async () => {
+  if (isLoadingMore.value || !hasMorePages.value) return;
+  
+  try {
+    isLoadingMore.value = true;
+    const nextPage = resourceStore.currentPage + 1;
+    
+    // Update the current page
+    resourceStore.currentPage = nextPage;
+    
+    // Use the store's loadResources with append=true
+    await resourceStore.loadResources(true);
+    
+    // Check if there are more pages
+    hasMorePages.value = resourceStore.currentPage < resourceStore.totalPages;
+  } catch (error) {
+    console.error("Error loading more resources:", error);
+    toast.error("Failed to load more resources");
+  } finally {
+    isLoadingMore.value = false;
+  }
+};
+
+// Load resources on mount
 onMounted(() => {
   resourceStore.loadResources();
+  
+  // Wait for the DOM to update before setting up the observer
+  nextTick(() => {
+    setupIntersectionObserver();
+  });
 });
 
-// Single watcher for both resource changes and authentication changes
+// Update hasMorePages when resources are loaded
+watch(
+  () => resourceStore.totalPages,
+  (newValue) => {
+    hasMorePages.value = resourceStore.currentPage < newValue;
+  },
+  { immediate: true }
+);
+
+// Clean up observer on component unmount
+onUnmounted(() => {
+  if (observer.value && loadMoreTrigger.value) {
+    observer.value.unobserve(loadMoreTrigger.value);
+    observer.value.disconnect();
+  }
+});
+
+// Watch for resources changes and authentication changes
 watch(
   [() => resourceStore.resources, () => authStore.isAuthenticated],
   ([newResources, isAuthenticated]) => {
@@ -111,17 +171,26 @@ watch(
 
 // Handle search
 const handleSearch = () => {
+  // Reset to first page
+  resourceStore.currentPage = 1;
   resourceStore.updateFilters({ search: searchQuery.value });
+  
+  // Reset hasMorePages after filter change
+  nextTick(() => {
+    hasMorePages.value = resourceStore.currentPage < resourceStore.totalPages;
+  });
 };
 
 // Handle filter changes
 const handleFilterChange = (filter: string, value: string) => {
+  // Reset to first page
+  resourceStore.currentPage = 1;
   resourceStore.updateFilters({ [filter]: value });
-};
-
-// Handle page change
-const handlePageChange = (page: number) => {
-  resourceStore.changePage(page);
+  
+  // Reset hasMorePages after filter change
+  nextTick(() => {
+    hasMorePages.value = resourceStore.currentPage < resourceStore.totalPages;
+  });
 };
 
 // Set active tab

@@ -42,15 +42,21 @@ export const useResourceStore = defineStore('resource', () => {
   }
 
   // Load resources with current filters
-  const loadResources = async () => {
+  const loadResources = async (append = false) => {
     try {
       loading.value = true
       error.value = null
       const response = await resourceService.getResources(filters.value, currentPage.value)
-      resources.value = response.data
+      
+      // If append is true, add to existing resources, otherwise replace
+      if (append) {
+        resources.value = [...resources.value, ...response.data]
+      } else {
+        resources.value = response.data
+      }
       
       // Sync interactions to the store if they exist in the response
-      syncInteractionsToStore(resources.value)
+      syncInteractionsToStore(response.data)
       
       totalPages.value = response.pagination.pages
     } catch (err) {
@@ -62,15 +68,21 @@ export const useResourceStore = defineStore('resource', () => {
   }
 
   // Load free resources
-  const loadFreeResources = async () => {
+  const loadFreeResources = async (append = false) => {
     try {
       loading.value = true
       error.value = null
       const response = await resourceService.getFreeResources(currentPage.value)
-      resources.value = response.data
+      
+      // If append is true, add to existing resources, otherwise replace
+      if (append) {
+        resources.value = [...resources.value, ...response.data]
+      } else {
+        resources.value = response.data
+      }
       
       // Sync interactions to the store if they exist in the response
-      syncInteractionsToStore(resources.value)
+      syncInteractionsToStore(response.data)
       
       totalPages.value = response.pagination.pages
     } catch (err) {
@@ -82,15 +94,21 @@ export const useResourceStore = defineStore('resource', () => {
   }
 
   // Load paid resources
-  const loadPaidResources = async () => {
+  const loadPaidResources = async (append = false) => {
     try {
       loading.value = true
       error.value = null
       const response = await resourceService.getPaidResources(currentPage.value)
-      resources.value = response.data
+      
+      // If append is true, add to existing resources, otherwise replace
+      if (append) {
+        resources.value = [...resources.value, ...response.data]
+      } else {
+        resources.value = response.data
+      }
       
       // Sync interactions to the store if they exist in the response
-      syncInteractionsToStore(resources.value)
+      syncInteractionsToStore(response.data)
       
       totalPages.value = response.pagination.pages
     } catch (err) {

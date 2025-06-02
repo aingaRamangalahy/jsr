@@ -27,7 +27,7 @@ export interface ResourceData {
 // Resource service methods
 export const resourceService = {
   // Get all resources with optional filtering
-  async getResources(filters: ResourceFilters = {}, page = 1, limit = 10): Promise<PaginatedResponse<Resource>> {
+  async getResources(filters: ResourceFilters = {}, page = 1, limit = 50): Promise<PaginatedResponse<Resource>> {
     const params = { page, limit, ...filters }
     const response = await api.get('/resources/admin/all', { params })
     return response.data

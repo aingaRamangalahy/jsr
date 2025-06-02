@@ -2,7 +2,7 @@
   <Sidebar v-bind="$props">
     <SidebarHeader>
       <div class="flex items-center justify-between p-4">
-        <div @click="navigateTo('/')" class="flex items-center gap-2 px-2 py-1 rounded-md bg-primary/10 text-primary font-bold cursor-pointer">
+        <div @click="navigateTo('/')" class="flex items-center gap-2 px-2 py-1 rounded-md text-primary font-bold cursor-pointer">
           <img src="/images/logo.svg" alt="jsresources icon" class="w-6 h-6" />
           <span class="text-xl tracking-tight">jsresources<span class="text-sm opacity-70">.dev</span></span>
         </div>
@@ -10,8 +10,8 @@
     </SidebarHeader>
     
     <SidebarContent>
-            <!-- Actions Section -->
-            <SidebarGroup>
+      <!-- Actions Section -->
+      <SidebarGroup>
         <SidebarGroupLabel>Actions</SidebarGroupLabel>
         <SidebarMenu>
           <SidebarMenuItem v-if="authStore.isAuthenticated">

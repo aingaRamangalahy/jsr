@@ -33,7 +33,7 @@ interface ResourcesResponse {
 
 export const resourceService = {
   // Get all resources with optional filtering
-  async getResources(filters: ResourceFilters = {}, page = 1, limit = 10): Promise<ResourcesResponse> {
+  async getResources(filters: ResourceFilters = {}, page = 1, limit = 50): Promise<ResourcesResponse> {
     // Process array filters to be API-friendly
     const processedFilters: Record<string, any> = { ...filters };
     
@@ -57,7 +57,7 @@ export const resourceService = {
   },
 
   // Get free resources
-  async getFreeResources(page = 1, limit = 10): Promise<ResourcesResponse> {
+  async getFreeResources(page = 1, limit = 50): Promise<ResourcesResponse> {
     const { data } = await api.get('/resources/free', {
       params: { page, limit }
     })
@@ -65,7 +65,7 @@ export const resourceService = {
   },
 
   // Get paid resources
-  async getPaidResources(page = 1, limit = 10): Promise<ResourcesResponse> {
+  async getPaidResources(page = 1, limit = 50): Promise<ResourcesResponse> {
     const { data } = await api.get('/resources/paid', {
       params: { page, limit }
     })
