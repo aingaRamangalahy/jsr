@@ -1,125 +1,82 @@
 # JSResources (JSR)
 
-A comprehensive platform for curating and discovering JavaScript resources.
+JSResources (JSR) is a community-driven platform designed to help JavaScript developers discover, share, and curate valuable learning materials, tools, and libraries. Our goal is to create a central hub where developers of all levels can find high-quality resources to enhance their skills and stay up-to-date with the ever-evolving JavaScript ecosystem.
 
-## Deployment Guide
+Whether you're looking for tutorials on a new framework, a handy utility library, or insightful articles on best practices, JSR aims to provide a well-organized and easily searchable collection. Users can contribute by submitting new resources, voting on existing ones, and participating in discussions.
 
-### MongoDB Atlas Setup (For Production)
+## Key Features (Planned/In Development)
 
-1. Create a MongoDB Atlas account at [https://www.mongodb.com/cloud/atlas](https://www.mongodb.com/cloud/atlas)
+*   **Resource Curation:** Submit, categorize, and tag JavaScript resources.
+*   **Voting & Ranking:** Upvote your favorite resources to help others find the best content.
+*   **Search & Filtering:** Easily find resources based on keywords, categories, tags, and popularity.
+*   **User Accounts:** Create a profile, track your contributions, and save your favorite resources.
+*   **Community Driven:** Open for contributions and discussions.
 
-2. Create a new cluster (the free tier is sufficient to start)
+## Running Locally with Docker
 
-3. Set up a database user with read/write permissions
+To get a local instance of JSR running for development or testing, follow these steps:
 
-4. Configure network access (IP whitelist):
-   - For development: Add your current IP address
-   - For production: Add your VPS/server IP address or use 0.0.0.0/0 for public access (less secure)
+1.  **Clone the Repository:**
+    ```bash
+    git clone https://github.com/yourusername/jsr.git
+    cd jsr
+    ```
+    *(Replace `yourusername` with the actual GitHub username or organization if different)*
 
-5. Get your connection string by clicking "Connect" > "Connect your application"
-   - Replace `<username>`, `<password>`, and `<database>` with your actual values
-   - This will be used as the `MONGODB_ATLAS_URI` environment variable
+2.  **Set Up Environment Variables:**
+    Copy the example environment file and customize it as needed:
+    ```bash
+    cp env.example .env
+    ```
+    Ensure you have a `MONGODB_URI` configured in your `.env` file. For local development, this can point to a local MongoDB instance or a free tier MongoDB Atlas database. The `env.example` file provides a template for a local Docker-based MongoDB.
 
-### Local Development with Docker
+3.  **Start the Application:**
+    Use Docker Compose to build and run the application services:
+    ```bash
+    docker-compose up -d
+    ```
 
-1. Clone the repository and navigate to the project directory:
-   ```bash
-   git clone https://github.com/yourusername/jsr.git
-   cd jsr
-   ```
+4.  **Access the Application:**
+    Once the containers are up and running, you can access the different parts of the application:
+    *   **Frontend:** [http://localhost:80](http://localhost:80)
+    *   **Admin Dashboard:** [http://localhost:80/admin](http://localhost:80/admin)
+    *   **API:** [http://localhost:80/api](http://localhost:80/api)
+    *   **API Documentation:** [http://localhost:80/api-docs](http://localhost:80/api-docs)
 
-2. Create a `.env` file based on the provided example:
-   ```bash
-   cp env.example .env
-   ```
+## Deployment
 
-3. Update the environment variables in the `.env` file with your own values.
-   - For local development, you can use the built-in MongoDB container
-   - For testing with Atlas, configure the `MONGODB_ATLAS_URI` variable
+To deploy JSResources to a production environment, you will generally need to:
 
-4. Start the development environment using Docker Compose:
-   ```bash
-   docker-compose up -d
-   ```
+1.  **Prepare a Server:**
+    Set up a server (e.g., a VPS) with Docker and Docker Compose installed.
 
-5. Access the application:
-   - Frontend: http://localhost:80
-   - Admin Dashboard: http://localhost:80/admin
-   - API: http://localhost:80/api
-   - API Documentation: http://localhost:80/api-docs
+2.  **Configure Environment Variables:**
+    Create a `.env` file on your server with your production settings. This will include:
+    *   `MONGODB_ATLAS_URI`: Your production MongoDB connection string (MongoDB Atlas is recommended for production).
+    *   `NODE_ENV=production`
+    *   Any other necessary API keys or secrets.
 
-### Production Deployment on DigitalOcean
+3.  **Obtain the Code:**
+    Clone the repository onto your server:
+    ```bash
+    git clone https://github.com/yourusername/jsr.git
+    cd jsr
+    ```
 
-1. Create a DigitalOcean Droplet with Ubuntu 22.04.
+4.  **Build and Run with Docker Compose:**
+    Use the production Docker Compose file to build and start the services:
+    ```bash
+    docker-compose -f docker-compose.prod.yml up -d --build
+    ```
 
-2. SSH into your Droplet:
-   ```bash
-   ssh root@your_server_ip
-   ```
+5.  **Set Up a Reverse Proxy & SSL:**
+    It is highly recommended to set up a reverse proxy (like Nginx) in front of the application. This will allow you to:
+    *   Handle SSL/TLS termination (HTTPS).
+    *   Serve multiple applications on the same server if needed.
+    *   Improve security and performance.
+    The `nginx-host-config.conf` file in the repository provides an example Nginx configuration. You will need to adapt it to your domain and SSL certificate setup (e.g., using Let's Encrypt).
 
-3. Clone the repository and navigate to the project directory:
-   ```bash
-   git clone https://github.com/yourusername/jsr.git
-   cd jsr
-   ```
+6.  **Configure DNS:**
+    Point your domain name's DNS records to your server's IP address.
 
-4. Update the environment variables:
-   ```bash
-   cp env.example .env
-   nano .env
-   ```
-   
-   Make sure to configure your MongoDB Atlas URI correctly:
-   ```
-   MONGODB_ATLAS_URI=mongodb+srv://<username>:<password>@<cluster>.mongodb.net/<database>?retryWrites=true&w=majority
-   ```
-
-5. Make the deployment script executable:
-   ```bash
-   chmod +x scripts/deploy-digitalocean.sh
-   ```
-
-6. Run the deployment script:
-   ```bash
-   ./scripts/deploy-digitalocean.sh
-   ```
-
-7. The script will:
-   - Install Docker and Docker Compose if needed
-   - Configure Nginx for SSL
-   - Set up Let's Encrypt SSL certificates
-   - Start all services in production mode
-
-8. Access your production application at https://yourdomain.com
-
-### GitHub Actions Deployment
-
-The repository includes a GitHub Actions workflow that automatically deploys the application to your VPS when code is pushed to the master branch.
-
-To use this workflow:
-
-1. Add the following secrets to your GitHub repository:
-   - `VPS_SSH_KEY`: Your private SSH key for accessing the server
-   - `VPS_USER`: The username for SSH access (e.g., root)
-   - `VPS_HOST`: The IP address or hostname of your VPS
-   - `MONGODB_ATLAS_URI`: Your MongoDB Atlas connection string
-
-2. Ensure your server is set up to accept the SSH key used in the GitHub Actions workflow.
-
-3. Push to the master branch to trigger the deployment.
-
-### SSL Certificate Renewal
-
-The deployment script adds a reminder to set up a cron job for automatic SSL certificate renewal. To create this cron job, run:
-
-```bash
-crontab -e
-```
-
-Then add the following line:
-
-```
-0 0 1 * * cd /path/to/jsr && docker-compose -f docker-compose.prod.yml run --rm certbot renew && docker-compose -f docker-compose.prod.yml exec nginx nginx -s reload
-```
-
-This will renew your SSL certificates on the first day of each month. 
+This provides a general outline. Specific steps may vary based on your hosting provider and exact server configuration.

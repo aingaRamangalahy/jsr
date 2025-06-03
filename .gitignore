@@ -7,3 +7,7 @@ dist/
 .env
 
 build-output.md
+
+nginx-host-config.conf
+
+update_nginx.sh
