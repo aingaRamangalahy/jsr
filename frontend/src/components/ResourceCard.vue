@@ -365,9 +365,3 @@ const navigateToDetail = () => {
 };
 
 </script>
-
-<script lang="ts">
-export default {
-  name: 'ResourceCard'
-}
-</script>

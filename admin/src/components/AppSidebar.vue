@@ -116,12 +116,7 @@ const isActive = (path: string) => {
   return router.currentRoute.value.path === path
 }
 
-// Add default export
 defineOptions({
   name: 'AppSidebar'
 })
-</script>
-
-<script lang="ts">
-export default {}
 </script>
