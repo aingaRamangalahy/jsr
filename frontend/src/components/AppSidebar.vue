@@ -73,7 +73,10 @@
                 :is-active="currentCategory === category.id"
               >
                 <a href="#" @click.prevent="filterByCategory(category.id)">
-                  <FolderIcon class="w-5 h-5 mr-2" />
+                  <div class="flex items-center justify-center w-5 h-5 mr-2 rounded-full overflow-hidden">
+                    <img v-if="category.iconUrl" :src="category.iconUrl" alt="Category Icon" class="w-full h-full object-cover" />
+                    <FolderIcon v-else class="w-full h-full object-cover" />
+                  </div>
                   <span>{{ category.name }}</span>
                 </a>
               </SidebarMenuButton>
@@ -81,73 +84,22 @@
           </template>
         </SidebarMenu>
       </SidebarGroup>
-
-      <!-- Difficulty Level Filters -->
-      <SidebarGroup>
-        <SidebarGroupLabel>Difficulty</SidebarGroupLabel>
-        <SidebarMenu>
-          <div class="px-3 py-2 space-y-4">
-            <div class="flex items-center space-x-2">
-              <Checkbox 
-                id="beginner" 
-                v-model="difficultyFilters.beginner"
-              />
-              <label for="beginner" class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
-                Beginner
-              </label>
-            </div>
-            
-            <div class="flex items-center space-x-2">
-              <Checkbox 
-                id="intermediate" 
-                v-model="difficultyFilters.intermediate"
-              />
-              <label for="intermediate" class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
-                Intermediate
-              </label>
-            </div>
-            
-            <div class="flex items-center space-x-2">
-              <Checkbox 
-                id="advanced" 
-                v-model="difficultyFilters.advanced"
-              />
-              <label for="advanced" class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
-                Advanced
-              </label>
-            </div>
-          </div>
-        </SidebarMenu>
-      </SidebarGroup>
-
-      <!-- Payment Type Filters -->
-      <SidebarGroup>
-        <SidebarGroupLabel>Payment Type</SidebarGroupLabel>
-        <SidebarMenu>
-          <div class="px-3 py-2 space-y-4">
-            <div class="flex items-center space-x-2">
-              <Checkbox 
-                id="free" 
-                v-model="pricingFilters.free"
-              />
-              <label for="free" class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
-                Free
-              </label>
-            </div>
-            
-            <div class="flex items-center space-x-2">
-              <Checkbox 
-                id="paid" 
-                v-model="pricingFilters.paid"
-              />
-              <label for="paid" class="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
-                Paid
-              </label>
-            </div>
-          </div>
-        </SidebarMenu>
-      </SidebarGroup>
     </SidebarContent>
+    
+    <!-- Signature Footer -->
+    <div class="p-4 border-t border-sidebar-border">
+      <div class="text-xs text-center text-zinc-500 dark:text-zinc-400">
+        crafted with ❤️ by 
+        <a 
+          href="https://www.ainga.me" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="text-primary hover:underline font-medium"
+        >
+          Ainga
+        </a>
+      </div>
+    </div>
     
     <SidebarRail />
   </Sidebar>
@@ -179,8 +131,6 @@ import {
   SidebarRail,
   type SidebarProps
 } from '@/components/ui/sidebar'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Check } from 'lucide-vue-next'
 import {
   BookmarkIcon,
   PlusIcon,
@@ -201,19 +151,6 @@ const categories = ref<Category[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 const currentCategory = ref('all')
-
-// Define difficulty filters
-const difficultyFilters = reactive({
-  beginner: false,
-  intermediate: false,
-  advanced: false
-})
-
-// Define pricing filters
-const pricingFilters = reactive({
-  free: false,
-  paid: false
-})
 
 // Fetch categories on mount
 onMounted(async () => {
@@ -248,28 +185,6 @@ const filterByCategory = (categoryId: string) => {
     router.push("/resources")
   }
 }
-
-// Watch for difficulty filter changes
-watch(difficultyFilters, () => {
-  // Get all selected difficulty levels
-  const selectedLevels = Object.entries(difficultyFilters)
-    .filter(([_, isSelected]) => isSelected)
-    .map(([key, _]) => key)
-  
-  // Update filters with array of selected difficulties
-  resourceStore.updateFilters({ difficulty: selectedLevels })
-}, { deep: true })
-
-// Watch for pricing filter changes
-watch(pricingFilters, () => {
-  // Get all selected pricing types
-  const selectedTypes = Object.entries(pricingFilters)
-    .filter(([_, isSelected]) => isSelected)
-    .map(([key, _]) => key) as ('free' | 'paid')[]
-  
-  // Update filters with array of selected pricing types
-  resourceStore.updateFilters({ pricingType: selectedTypes })
-}, { deep: true })
 
 const navigateTo = (path: string) => {
   router.push(path)

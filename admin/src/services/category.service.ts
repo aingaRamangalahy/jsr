@@ -16,14 +16,14 @@ export const categoryService = {
   },
 
   // Create a new category
-  async createCategory(name: string, description: string): Promise<ApiResponse<Category>> {
-    const response = await api.post('/categories', { name, description })
+  async createCategory(name: string, description: string, iconUrl: string = ''): Promise<ApiResponse<Category>> {
+    const response = await api.post('/categories', { name, description, iconUrl })
     return response.data
   },
 
   // Update a category
-  async updateCategory(id: string, name: string, description: string): Promise<ApiResponse<Category>> {
-    const response = await api.put(`/categories/${id}`, { name, description })
+  async updateCategory(id: string, name: string, description: string, iconUrl: string = ''): Promise<ApiResponse<Category>> {
+    const response = await api.put(`/categories/${id}`, { name, description, iconUrl })
     return response.data
   },
 

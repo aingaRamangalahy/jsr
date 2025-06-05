@@ -36,6 +36,22 @@
           <FormMessage v-if="errors.description">{{ errors.description }}</FormMessage>
         </FormItem>
       </FormField>
+
+      <!-- Icon URL Field -->
+      <FormField name="iconUrl">
+        <FormItem>
+          <FormLabel for="iconUrl">Icon URL</FormLabel>
+          <FormControl>
+            <Input 
+              id="iconUrl" 
+              v-model="formData.iconUrl" 
+              placeholder="Enter icon URL"
+              :disabled="isLoading"
+            />
+          </FormControl>
+          <FormMessage v-if="errors.iconUrl">{{ errors.iconUrl }}</FormMessage>
+        </FormItem>
+      </FormField>
     </div>
 
     <!-- Action Buttons -->
@@ -72,26 +88,28 @@ interface Props {
     id?: string;
     name: string;
     description: string;
+    iconUrl?: string;
   };
   isLoading?: boolean;
   isEditing?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  initialData: () => ({ name: '', description: '' }),
+  initialData: () => ({ name: '', description: '', iconUrl: undefined }),
   isLoading: false,
   isEditing: false
 })
 
 const emit = defineEmits<{
-  (e: 'submit', data: { name: string; description: string; id?: string }): void;
+  (e: 'submit', data: { name: string; description: string; id?: string; iconUrl?: string }): void;
   (e: 'cancel'): void;
 }>()
 
 const formData = ref({
   id: props.initialData.id,
   name: props.initialData.name,
-  description: props.initialData.description
+  description: props.initialData.description,
+  iconUrl: props.initialData.iconUrl
 })
 
 // Reset form when initialData changes
@@ -99,18 +117,20 @@ watchEffect(() => {
   formData.value = {
     id: props.initialData.id,
     name: props.initialData.name,
-    description: props.initialData.description
+    description: props.initialData.description,
+    iconUrl: props.initialData.iconUrl
   }
 })
 
 const errors = ref({
   name: '',
-  description: ''
+  description: '',
+  iconUrl: ''
 })
 
 const validateForm = () => {
   let isValid = true
-  errors.value = { name: '', description: '' }
+  errors.value = { name: '', description: '', iconUrl: '' }
 
   if (!formData.value.name.trim()) {
     errors.value.name = 'Name is required'
@@ -122,6 +142,11 @@ const validateForm = () => {
     isValid = false
   }
 
+  if (!formData.value.iconUrl.trim()) {
+    errors.value.iconUrl = 'Icon URL is required'
+    isValid = false
+  }
+
   return isValid
 }
 
@@ -130,7 +155,8 @@ const onSubmit = () => {
     emit('submit', { 
       id: formData.value.id,
       name: formData.value.name,
-      description: formData.value.description
+      description: formData.value.description,
+      iconUrl: formData.value.iconUrl
     })
   }
 }

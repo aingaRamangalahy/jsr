@@ -22,6 +22,7 @@
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Description</TableHead>
+            <TableHead>Icon</TableHead>
             <TableHead>Created</TableHead>
             <TableHead class="text-right">Actions</TableHead>
           </TableRow>
@@ -40,6 +41,9 @@
           <TableRow v-else v-for="category in categories" :key="category.id">
             <TableCell>{{ category.name }}</TableCell>
             <TableCell>{{ category.description }}</TableCell>
+            <TableCell>
+              <img :src="category.iconUrl" alt="Category Icon" class="w-10 h-10 rounded-full">
+            </TableCell>
             <TableCell>{{ formatDate(category.createdAt) }}</TableCell>
             <TableCell class="text-right">
               <div class="flex justify-end space-x-2">
@@ -63,7 +67,7 @@
       @update:open="val => dialogOpen = val"
       :is-loading="isSubmitting"
       :is-editing="!!selectedCategory"
-      :entity-data="selectedCategory || { name: '', description: '' }"
+      :entity-data="selectedCategory || { name: '', description: '', iconUrl: '' } as Category"
       @submit="handleSubmit"
     />
 
@@ -165,16 +169,16 @@ const openEditDialog = (category: Category) => {
   dialogOpen.value = true
 }
 
-const handleSubmit = async (data: { id?: string; name: string; description: string }) => {
+const handleSubmit = async (data: { id?: string; name: string; description: string; iconUrl: string }) => {
   isSubmitting.value = true
   
   try {
     if (data.id) {
       // Update existing category
-      await categoryService.updateCategory(data.id, data.name, data.description)
+      await categoryService.updateCategory(data.id, data.name, data.description, data.iconUrl)
     } else {
       // Create new category
-      await categoryService.createCategory(data.name, data.description)
+      await categoryService.createCategory(data.name, data.description, data.iconUrl)
     }
     
     // Refresh categories list

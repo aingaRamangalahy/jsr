@@ -21,6 +21,9 @@ const categorySchema = new Schema<CategoryDocument>({
     required: [true, 'Description is required'],
     trim: true,
     maxlength: [500, 'Description cannot be more than 500 characters']
+  },
+  iconUrl: {
+    type: String,
   }
 }, {
   timestamps: true,
