@@ -45,23 +45,24 @@ interface Props {
     id?: string;
     name: string;
     description: string;
+    iconUrl?: string;
   };
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  entityData: () => ({ name: '', description: '' }),
+  entityData: () => ({ name: '', description: '', iconUrl: undefined }),
 })
 
 const emit = defineEmits<{
   (e: 'update:open', value: boolean): void;
-  (e: 'submit', data: { id?: string; name: string; description: string }): void;
+  (e: 'submit', data: { id?: string; name: string; description: string; iconUrl?: string }): void;
 }>()
 
 const toggleDialog = (value: boolean) => {
   emit('update:open', value)
 }
 
-const handleSubmit = (data: { id?: string; name: string; description: string }) => {
-  emit('submit', data)
+const handleSubmit = (data: { id?: string; name: string; description: string; iconUrl?: string }) => {
+  emit('submit', data) 
 }
 </script> 

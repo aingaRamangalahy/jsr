@@ -67,7 +67,7 @@ export const getCategoryById = async (req: Request, res: Response): Promise<void
  */
 export const createCategory = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, description } = req.body;
+    const { name, description, iconUrl } = req.body;
     
     // Validate required fields
     if (!name || !description) {
@@ -98,7 +98,8 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
     // Create new category
     const category = await CategoryModel.create({
       name,
-      description
+      description,
+      iconUrl
     });
     
     res.status(201).json({
@@ -124,7 +125,7 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
 export const updateCategory = async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
-    const { name, description } = req.body;
+    const { name, description, iconUrl } = req.body;
     
     // Validate required fields
     if (!name && !description) {
@@ -157,7 +158,7 @@ export const updateCategory = async (req: Request, res: Response): Promise<void>
     // Find and update category
     const category = await CategoryModel.findByIdAndUpdate(
       id,
-      { name, description },
+      { name, description, iconUrl },
       { new: true, runValidators: true }
     );
     

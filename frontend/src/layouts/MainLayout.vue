@@ -19,13 +19,15 @@
                   class="absolute left-3 top-2.5 h-4 w-4 text-zinc-500 dark:text-zinc-500"
                 />
                 <!-- Clear button -->
-                <button 
+                <Button 
                   v-if="searchQuery" 
-                  class="absolute right-3 top-2.5 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300 focus:outline-none"
+                  variant="ghost"
+                  size="sm"
+                  class="absolute right-1 top-1 h-6 w-6 p-0 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300"
                   @click="clearSearch"
                 >
                   <XIcon class="h-4 w-4" />
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -80,8 +82,67 @@
           </div>
         </header>
 
+        <!-- Filter Section -->
+        <div class="pt-6 pb-3 px-6 bg-sidebar sticky top-[61px] z-10">
+          <div class="flex items-center gap-6">
+            <div class="flex items-center gap-2">
+              <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                Difficulty:
+              </label>
+              <div class="flex gap-2">
+                <Button
+                  v-for="difficulty in ['beginner', 'intermediate', 'advanced']"
+                  :key="difficulty"
+                  :variant="difficultyFilters[difficulty] ? 'default' : 'outline'"
+                  size="sm"
+                  class="text-xs"
+                  @click="handleDifficultyChange(difficulty)"
+                >
+                  {{ difficulty.charAt(0).toUpperCase() + difficulty.slice(1) }}
+                </Button>
+              </div>
+              <Button
+                v-if="selectedDifficulties.length > 0"
+                variant="ghost"
+                size="sm"
+                class="text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 ml-2"
+                @click="clearDifficultyFilter"
+              >
+                Clear
+              </Button>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                Payment:
+              </label>
+              <div class="flex gap-2">
+                <Button
+                  v-for="pricing in ['free', 'paid']"
+                  :key="pricing"
+                  :variant="pricingFilters[pricing] ? 'default' : 'outline'"
+                  size="sm"
+                  class="text-xs"
+                  @click="handlePricingChange(pricing)"
+                >
+                  {{ pricing.charAt(0).toUpperCase() + pricing.slice(1) }}
+                </Button>
+              </div>
+              <Button
+                v-if="selectedPricingTypes.length > 0"
+                variant="ghost"
+                size="sm"
+                class="text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 ml-2"
+                @click="clearPricingFilter"
+              >
+                Clear
+              </Button>
+            </div>
+          </div>
+        </div>
+
         <!-- Page Content -->
-        <div class="p-5 bg-gray-50 dark:bg-zinc-900 min-h-[calc(100vh-64px)]">
+        <div class="p-5 bg-gray-50 dark:bg-zinc-900 min-h-[calc(100vh-128px)]">
           <router-view />
         </div>
       </SidebarInset>
@@ -90,7 +151,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, reactive } from "vue";
 import { useRouter } from "vue-router";
 import { useResourceStore } from "@/stores/resource.store";
 import { useAuthStore } from "@/stores/auth.store";
@@ -129,6 +190,76 @@ let searchTimeout: any = null;
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const userDisplayName = computed(() => authStore.userDisplayName);
 const userAvatar = computed(() => authStore.userAvatar);
+
+// Define difficulty filters
+const difficultyFilters = reactive({
+  beginner: false,
+  intermediate: false,
+  advanced: false
+});
+
+// Define pricing filters
+const pricingFilters = reactive({
+  free: false,
+  paid: false
+});
+
+// Watch for difficulty filter changes
+watch(difficultyFilters, () => {
+  // Get all selected difficulty levels
+  const selectedLevels = Object.entries(difficultyFilters)
+    .filter(([_, isSelected]) => isSelected)
+    .map(([key, _]) => key)
+  
+  // Update filters with array of selected difficulties
+  resourceStore.updateFilters({ difficulty: selectedLevels })
+}, { deep: true });
+
+// Watch for pricing filter changes
+watch(pricingFilters, () => {
+  // Get all selected pricing types
+  const selectedTypes = Object.entries(pricingFilters)
+    .filter(([_, isSelected]) => isSelected)
+    .map(([key, _]) => key) as ('free' | 'paid')[]
+  
+  // Update filters with array of selected pricing types
+  resourceStore.updateFilters({ pricingType: selectedTypes })
+}, { deep: true });
+
+// Computed values for display
+const selectedDifficulties = computed(() => 
+  Object.entries(difficultyFilters)
+    .filter(([_, isSelected]) => isSelected)
+    .map(([key, _]) => key)
+);
+
+const selectedPricingTypes = computed(() => 
+  Object.entries(pricingFilters)
+    .filter(([_, isSelected]) => isSelected)
+    .map(([key, _]) => key)
+);
+
+// Functions to handle filter changes
+const handleDifficultyChange = (value: string) => {
+  difficultyFilters[value as keyof typeof difficultyFilters] = !difficultyFilters[value as keyof typeof difficultyFilters];
+};
+
+const handlePricingChange = (value: string) => {
+  pricingFilters[value as keyof typeof pricingFilters] = !pricingFilters[value as keyof typeof pricingFilters];
+};
+
+// Functions to clear filters
+const clearDifficultyFilter = () => {
+  Object.keys(difficultyFilters).forEach(key => {
+    difficultyFilters[key as keyof typeof difficultyFilters] = false;
+  });
+};
+
+const clearPricingFilter = () => {
+  Object.keys(pricingFilters).forEach(key => {
+    pricingFilters[key as keyof typeof pricingFilters] = false;
+  });
+};
 
 // Watch for changes to the search query with debouncing
 watch(searchQuery, (newValue) => {
