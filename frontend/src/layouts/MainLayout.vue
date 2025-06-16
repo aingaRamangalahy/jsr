@@ -82,65 +82,6 @@
           </div>
         </header>
 
-        <!-- Filter Section -->
-        <div class="pt-6 pb-3 px-6 bg-sidebar sticky top-[61px] z-10">
-          <div class="flex items-center gap-6">
-            <div class="flex items-center gap-2">
-              <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                Difficulty:
-              </label>
-              <div class="flex gap-2">
-                <Button
-                  v-for="difficulty in ['beginner', 'intermediate', 'advanced']"
-                  :key="difficulty"
-                  :variant="difficultyFilters[difficulty] ? 'default' : 'outline'"
-                  size="sm"
-                  class="text-xs"
-                  @click="handleDifficultyChange(difficulty)"
-                >
-                  {{ difficulty.charAt(0).toUpperCase() + difficulty.slice(1) }}
-                </Button>
-              </div>
-              <Button
-                v-if="selectedDifficulties.length > 0"
-                variant="ghost"
-                size="sm"
-                class="text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 ml-2"
-                @click="clearDifficultyFilter"
-              >
-                Clear
-              </Button>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                Payment:
-              </label>
-              <div class="flex gap-2">
-                <Button
-                  v-for="pricing in ['free', 'paid']"
-                  :key="pricing"
-                  :variant="pricingFilters[pricing] ? 'default' : 'outline'"
-                  size="sm"
-                  class="text-xs"
-                  @click="handlePricingChange(pricing)"
-                >
-                  {{ pricing.charAt(0).toUpperCase() + pricing.slice(1) }}
-                </Button>
-              </div>
-              <Button
-                v-if="selectedPricingTypes.length > 0"
-                variant="ghost"
-                size="sm"
-                class="text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 ml-2"
-                @click="clearPricingFilter"
-              >
-                Clear
-              </Button>
-            </div>
-          </div>
-        </div>
-
         <!-- Page Content -->
         <div class="p-5 bg-gray-50 dark:bg-zinc-900 min-h-[calc(100vh-128px)]">
           <router-view />
