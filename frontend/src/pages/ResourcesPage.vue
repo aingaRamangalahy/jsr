@@ -1,4 +1,63 @@
 <template>
+  <!-- Filter Section -->
+  <div class="py-3 px-6">
+    <div class="flex items-center gap-6">
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          Difficulty:
+        </label>
+        <div class="flex gap-2">
+          <Button
+            v-for="difficulty in ['beginner', 'intermediate', 'advanced']"
+            :key="difficulty"
+            :variant="difficultyFilters[difficulty] ? 'default' : 'outline'"
+            size="sm"
+            class="text-xs"
+            @click="handleDifficultyChange(difficulty)"
+          >
+            {{ difficulty.charAt(0).toUpperCase() + difficulty.slice(1) }}
+          </Button>
+        </div>
+        <Button
+          v-if="selectedDifficulties.length > 0"
+          variant="ghost"
+          size="sm"
+          class="text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 ml-2"
+          @click="clearDifficultyFilter"
+        >
+          Clear
+        </Button>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+          Payment:
+        </label>
+        <div class="flex gap-2">
+          <Button
+            v-for="pricing in ['free', 'paid']"
+            :key="pricing"
+            :variant="pricingFilters[pricing] ? 'default' : 'outline'"
+            size="sm"
+            class="text-xs"
+            @click="handlePricingChange(pricing)"
+          >
+            {{ pricing.charAt(0).toUpperCase() + pricing.slice(1) }}
+          </Button>
+        </div>
+        <Button
+          v-if="selectedPricingTypes.length > 0"
+          variant="ghost"
+          size="sm"
+          class="text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 ml-2"
+          @click="clearPricingFilter"
+        >
+          Clear
+        </Button>
+      </div>
+    </div>
+  </div>
+
   <!-- Resources Grid -->
   <div class="px-6 py-4">
     <!-- Initial loading -->
@@ -43,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch, nextTick, onUnmounted } from "vue";
+import { onMounted, ref, watch, nextTick, onUnmounted, reactive, computed } from "vue";
 import { useResourceStore } from "@/stores/resource.store";
 import { useAuthStore } from "@/stores/auth.store";
 import { resourceService } from "@/services/resource.service";
@@ -75,6 +134,76 @@ const observer = ref<IntersectionObserver | null>(null);
 
 // Determine if there are more pages to load
 const hasMorePages = ref(false);
+
+// Define difficulty filters
+const difficultyFilters = reactive({
+  beginner: false,
+  intermediate: false,
+  advanced: false
+});
+
+// Define pricing filters
+const pricingFilters = reactive({
+  free: false,
+  paid: false
+});
+
+// Watch for difficulty filter changes
+watch(difficultyFilters, () => {
+  // Get all selected difficulty levels
+  const selectedLevels = Object.entries(difficultyFilters)
+    .filter(([_, isSelected]) => isSelected)
+    .map(([key, _]) => key)
+  
+  // Update filters with array of selected difficulties
+  resourceStore.updateFilters({ difficulty: selectedLevels })
+}, { deep: true });
+
+// Watch for pricing filter changes
+watch(pricingFilters, () => {
+  // Get all selected pricing types
+  const selectedTypes = Object.entries(pricingFilters)
+    .filter(([_, isSelected]) => isSelected)
+    .map(([key, _]) => key) as ('free' | 'paid')[]
+  
+  // Update filters with array of selected pricing types
+  resourceStore.updateFilters({ pricingType: selectedTypes })
+}, { deep: true });
+
+// Computed values for display
+const selectedDifficulties = computed(() => 
+  Object.entries(difficultyFilters)
+    .filter(([_, isSelected]) => isSelected)
+    .map(([key, _]) => key)
+);
+
+const selectedPricingTypes = computed(() => 
+  Object.entries(pricingFilters)
+    .filter(([_, isSelected]) => isSelected)
+    .map(([key, _]) => key)
+);
+
+// Functions to handle filter changes
+const handleDifficultyChange = (value: string) => {
+  difficultyFilters[value as keyof typeof difficultyFilters] = !difficultyFilters[value as keyof typeof difficultyFilters];
+};
+
+const handlePricingChange = (value: string) => {
+  pricingFilters[value as keyof typeof pricingFilters] = !pricingFilters[value as keyof typeof pricingFilters];
+};
+
+// Functions to clear filters
+const clearDifficultyFilter = () => {
+  Object.keys(difficultyFilters).forEach(key => {
+    difficultyFilters[key as keyof typeof difficultyFilters] = false;
+  });
+};
+
+const clearPricingFilter = () => {
+  Object.keys(pricingFilters).forEach(key => {
+    pricingFilters[key as keyof typeof pricingFilters] = false;
+  });
+};
 
 // Setup intersection observer for infinite scrolling
 const setupIntersectionObserver = () => {
